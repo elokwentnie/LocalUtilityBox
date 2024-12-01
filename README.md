@@ -22,20 +22,30 @@
 ## Installation
 Get started with **LocalUtilityBox** in just a few steps:
 
-* Clone the Repository
+1. Clone the Repository
 ```bash
 git clone https://github.com/elokwentnie/LocalUtilityBox.git
 ```
-* Navigate to the Project Directory
+2. Navigate to the Project Directory
 ```bash
 cd LocalUtilityBox
 ```
-* Install Dependencies and Package
+3. Set Up a Local Python Environment
+```bash
+python3 -m venv env
+source env/bin/activate
+```
+4. Install Dependencies and Package
 Ensure you have pip installed. Then, run:
 ```bash
 pip3 install .
 ```
 This command will install LocalUtilityBox and its dependencies as specified in `requirements.txt`.
+
+## Set Up the `PYTHONPATH`
+```bash
+export PYTHONPATH=$PYTHONPATH:/path/to/LocalUtilityBox/src
+```
 
 ## Usage
 Once installed, **LocalUtilityBox** provides a set of simple commands for various tasks. Here are a few examples to get you started:

@@ -1,0 +1,174 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "LocalUtilityBox"
+version = "0.2.0"
+description = "A comprehensive toolkit for image, PDF, and document processing"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "LocalUtilityBox Team", email = "team@localutilitybox.dev"}
+]
+keywords = ["file-processing", "image-conversion", "pdf-tools", "document-processing", "cli"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+    "Topic :: Office/Business",
+    "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://github.com/elokwentnie/localutilitybox"
+Repository = "https://github.com/elokwentnie/localutilitybox"
+Issues = "https://github.com/elokwentnie/localutilitybox/issues"
+
+[project.scripts]
+webp_to_jpg = "image_processing.webp_to_jpg:main"
+webp_to_png = "image_processing.webp_to_png:main"
+jpg_to_png = "image_processing.jpg_to_png:main"
+png_to_jpg = "image_processing.png_to_jpg:main"
+tiff_to_jpg = "image_processing.tiff_to_jpg:main"
+img_to_pdf = "image_processing.img_to_pdf:main"
+img_to_greyscale = "image_processing.img_to_greyscale:main"
+heic_to_jpg = "image_processing.heic_to_jpg:main"
+reduce_img_size = "image_processing.reduce_img_size:main"
+remove_background = "image_processing.remove_background:main"
+extract_img_metadata = "image_processing.extract_img_metadata:main"
+extract_text_from_img = "image_processing.extract_text_from_img:main"
+merge_pdf = "file_management.merge_pdf:main"
+add_watermark = "file_management.add_watermark:main"
+doc_to_pdf = "file_management.doc_to_pdf:main"
+pdf_to_doc = "file_management.pdf_to_doc:main"
+split_pdf = "file_management.split_pdf:main"
+pdf_to_png = "file_management.pdf_to_png:main"
+pdf_to_jpg = "file_management.pdf_to_jpg:main"
+csv_to_excel = "file_management.csv_to_excel:main"
+excel_to_csv = "file_management.excel_to_csv:main"
+csv_to_json = "file_management.csv_to_json:main"
+json_to_csv = "file_management.json_to_csv:main"
+extract_audio_from_video = "video_audio_manipulation.extract_audio_from_video:main"
+
+# GUI applications
+localutilitybox-gui = "src.gui.launcher:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--verbose",
+    "--tb=short",
+    "--strict-markers",
+    "--disable-warnings",
+    "--cov=localutilitybox",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov",
+    "--cov-fail-under=80"
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests"
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/env/*"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["localutilitybox"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "PIL.*",
+    "pdf2image.*",
+    "PyPDF2.*",
+    "pandas.*",
+    "cv2.*",
+    "pytesseract.*",
+    "rembg.*",
+    "img2pdf.*",
+    "pdf2docx.*",
+    "pikepdf.*",
+    "pymupdf.*",
+    "openpyxl.*",
+    "docx2pdf.*",
+    "tkcolorpicker.*"
+]
+ignore_missing_imports = true

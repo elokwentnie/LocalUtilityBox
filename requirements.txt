@@ -1,17 +1,21 @@
-audio-extract
-docx2pdf
+# Core dependencies
+Pillow>=10.0.0
+PyPDF2>=3.0.0
+pdf2image>=3.1.0
+pandas>=2.0.0
+opencv-python>=4.8.0
+pytesseract>=0.3.10
+rembg>=2.0.0
 img2pdf>=0.5.1
-opencv-python
-openpyxl
-pandas
-pdf2docx
-pdf2image
-pikepdf
-Pillow
-pillow-heif
-pytesseract
-PyPDF2
-pymupdf
-rembg
-setuptools
-tkcolorpicker
+pdf2docx>=0.5.6
+pikepdf>=8.0.0
+pymupdf>=1.23.0
+pillow-heif>=0.13.0
+openpyxl>=3.1.0
+docx2pdf>=0.1.8
+
+# GUI dependencies
+tkcolorpicker>=1.2.0
+
+# Audio/Video processing
+audio-extract

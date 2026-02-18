@@ -1,7 +1,7 @@
 import sys
 import argparse
 from pathlib import Path
-from moviepy.editor import VideoFileClip
+from moviepy import VideoFileClip
 import mimetypes
 
 

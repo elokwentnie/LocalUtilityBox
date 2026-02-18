@@ -1,5 +1,6 @@
 audio-extract
 docx2pdf
+moviepy
 img2pdf>=0.5.1
 opencv-python
 openpyxl
@@ -12,6 +13,6 @@ pillow-heif
 pytesseract
 PyPDF2
 pymupdf
-rembg
-setuptools
+rembg[cpu]
+setuptools>=60,<82
 tkcolorpicker

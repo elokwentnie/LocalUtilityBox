@@ -211,3 +211,6 @@ Thumbs.db
 # Local development
 local_settings.py
 .env.local
+
+myenv/
+env/

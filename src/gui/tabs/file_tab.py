@@ -1,18 +1,18 @@
-"""File Management Tab."""
-import tkinter as tk
-from tkinter import ttk, messagebox
+"""File Management Tool definitions."""
+import customtkinter as ctk
 from pathlib import Path
 
 from ..widgets import (
-    FileSelector, DirectorySelector, MultiFileSelector, OutputFileSelector,
-    ParameterInput, ChoiceSelector, StatusDisplay
+    FileInput, DirectoryInput, MultiFileInput, OutputFileInput,
+    ChoiceInput, NumberInput, TextInput, CheckboxInput,
 )
-from ..utils import run_in_thread, validate_file_path, validate_directory_path
+from ..utils import validate_file_path
 
-# Import file management functions
 from file_management.merge_pdf import merge_pdf
 from file_management.split_pdf import split_pdf
 from file_management.add_watermark import add_watermark
+from file_management.compress_pdf import compress_pdf
+from file_management.rotate_pdf import rotate_pdf, reorder_pdf
 from file_management.doc_to_pdf import doc_to_pdf
 from file_management.pdf_to_doc import pdf_to_docx
 from file_management.pdf_to_png import pdf_to_png
@@ -23,602 +23,450 @@ from file_management.csv_to_json import csv_to_json
 from file_management.json_to_csv import json_to_csv
 
 
-class FileTab(ttk.Frame):
-    """File Management Tab."""
-    
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.status = StatusDisplay(self)
-        
-        # Create notebook for organizing tools
-        notebook = ttk.Notebook(self)
-        notebook.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # PDF Operations Tab
-        pdf_frame = ttk.Frame(notebook)
-        self._create_pdf_operations_section(pdf_frame)
-        notebook.add(pdf_frame, text="PDF Operations")
-        
-        # Document Conversion Tab
-        doc_frame = ttk.Frame(notebook)
-        self._create_document_conversion_section(doc_frame)
-        notebook.add(doc_frame, text="Document Conversion")
-        
-        # Data Format Conversion Tab
-        data_frame = ttk.Frame(notebook)
-        self._create_data_conversion_section(data_frame)
-        notebook.add(data_frame, text="Data Format Conversion")
-        
-        self.status.pack(fill="both", expand=True, padx=10, pady=10)
-    
-    def _create_pdf_operations_section(self, parent):
-        """Create PDF operations section."""
-        canvas = tk.Canvas(parent)
-        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
-        scrollable_frame = ttk.Frame(canvas)
-        
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-        
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
-        
-        # Merge PDF
-        self._create_merge_pdf_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # Split PDF
-        self._create_split_pdf_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # Add Watermark
-        self._create_add_watermark_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # PDF to PNG
-        self._create_pdf_to_png_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # PDF to JPG
-        self._create_pdf_to_jpg_section(scrollable_frame)
-        
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-    
-    def _create_document_conversion_section(self, parent):
-        """Create document conversion section."""
-        canvas = tk.Canvas(parent)
-        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
-        scrollable_frame = ttk.Frame(canvas)
-        
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-        
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
-        
-        # DOC to PDF
-        self._create_doc_to_pdf_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # PDF to DOC
-        self._create_pdf_to_doc_section(scrollable_frame)
-        
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-    
-    def _create_data_conversion_section(self, parent):
-        """Create data format conversion section."""
-        canvas = tk.Canvas(parent)
-        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
-        scrollable_frame = ttk.Frame(canvas)
-        
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-        
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
-        
-        # CSV to Excel
-        self._create_csv_to_excel_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # Excel to CSV
-        self._create_excel_to_csv_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # CSV to JSON
-        self._create_csv_to_json_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # JSON to CSV
-        self._create_json_to_csv_section(scrollable_frame)
-        
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-    
-    def _create_merge_pdf_section(self, parent):
-        """Merge PDF files."""
-        frame = ttk.LabelFrame(parent, text="Merge PDF Files", padding=10)
-        
-        file_selector = MultiFileSelector(frame, "Input PDF Files:",
-                                         [("PDF files", "*.pdf")])
-        file_selector.pack(fill="x", pady=5)
-        
-        dir_selector = DirectorySelector(frame, "Or Select Directory:")
-        dir_selector.pack(fill="x", pady=5)
-        
-        output_selector = OutputFileSelector(frame, "Output PDF File (Optional):",
-                                            [("PDF files", "*.pdf")], ".pdf")
-        output_selector.pack(fill="x", pady=5)
-        
-        def execute():
-            files = file_selector.get_paths()
-            directory = dir_selector.get_path()
-            
-            if not files and not directory:
-                messagebox.showerror("Error", "Please select files or a directory.")
-                return
-            
-            output_file = output_selector.get_path()
-            
-            def run():
-                if files:
-                    merge_pdf([Path(f) for f in files], Path(output_file) if output_file else None)
-                else:
-                    pdf_files = sorted(Path(directory).glob("*.pdf"))
-                    if pdf_files:
-                        merge_pdf(pdf_files, Path(output_file) if output_file else None)
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message("Successfully merged PDF files")
-                    messagebox.showinfo("Success", "Merge completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Merge PDFs", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_split_pdf_section(self, parent):
-        """Split PDF file."""
-        frame = ttk.LabelFrame(parent, text="Split PDF File", padding=10)
-        
-        file_selector = FileSelector(frame, "Input PDF File:", [("PDF files", "*.pdf")])
-        file_selector.pack(fill="x", pady=5)
-        
-        parts_input = ParameterInput(frame, "Number of Parts (Optional, leave empty for individual pages):", "")
-        parts_input.pack(fill="x", pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            valid, error = validate_file_path(input_file, [".pdf"])
-            if not valid:
-                messagebox.showerror("Error", error)
-                return
-            
-            parts_value = parts_input.get_value()
-            
-            def run():
-                from file_management.split_pdf import split_pdf, get_splitting_parts
-                from PyPDF2 import PdfReader
-                
-                if parts_value:
-                    try:
-                        reader = PdfReader(str(input_file))
-                        pdf_length = len(reader.pages)
-                        num_parts = int(parts_value)
-                        if num_parts > pdf_length:
-                            parts = None  # Split into individual pages
-                        else:
-                            parts = get_splitting_parts(pdf_length, num_parts)
-                    except Exception as e:
-                        parts = None
-                else:
-                    parts = None
-                
-                split_pdf(Path(input_file), parts)
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully split {input_file}")
-                    messagebox.showinfo("Success", "Split completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Split PDF", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_add_watermark_section(self, parent):
-        """Add watermark to PDF."""
-        frame = ttk.LabelFrame(parent, text="Add Watermark to PDF", padding=10)
-        
-        file_selector = FileSelector(frame, "Input PDF File:", [("PDF files", "*.pdf")])
-        file_selector.pack(fill="x", pady=5)
-        
-        watermark_selector = FileSelector(frame, "Watermark PDF File:", [("PDF files", "*.pdf")])
-        watermark_selector.pack(fill="x", pady=5)
-        
-        pages_label = ttk.Label(frame, text="Page Indices (comma-separated, leave empty for all pages):")
-        pages_label.pack(anchor="w", pady=5)
-        pages_entry = ttk.Entry(frame, width=60)
-        pages_entry.pack(fill="x", pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            watermark_file = watermark_selector.get_path()
-            
-            if not input_file or not watermark_file:
-                messagebox.showerror("Error", "Please select both input and watermark files.")
-                return
-            
-            valid, error = validate_file_path(input_file, [".pdf"])
-            if not valid:
-                messagebox.showerror("Error", f"Input file: {error}")
-                return
-            
-            valid, error = validate_file_path(watermark_file, [".pdf"])
-            if not valid:
-                messagebox.showerror("Error", f"Watermark file: {error}")
-                return
-            
-            pages_str = pages_entry.get().strip()
-            if pages_str:
-                try:
-                    pages = [int(p.strip()) for p in pages_str.split(",")]
-                except ValueError:
-                    messagebox.showerror("Error", "Invalid page indices format.")
-                    return
+# ---------------------------------------------------------------------------
+# Build functions
+# ---------------------------------------------------------------------------
+
+def build_merge_pdf(parent, status_bar):
+    files_in = MultiFileInput(parent, "Input PDF Files", [("PDF files", "*.pdf")])
+    files_in.pack(fill="x", pady=(0, 12))
+
+    dir_in = DirectoryInput(parent, "Or Select Directory")
+    dir_in.pack(fill="x", pady=(0, 16))
+
+    file_out = OutputFileInput(
+        parent, "Output PDF File (optional)", [("PDF files", "*.pdf")], ".pdf"
+    )
+    file_out.pack(fill="x", pady=(0, 24))
+
+    def execute():
+        files = files_in.get()
+        directory = dir_in.get()
+        if not files and not directory:
+            return status_bar.set_status(
+                "Please select files or a directory", "error"
+            )
+        out = file_out.get()
+
+        def task():
+            if files:
+                targets = [Path(f) for f in files]
             else:
-                pages = "ALL"
-            
-            def run():
-                add_watermark(Path(input_file), Path(watermark_file), pages)
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message("Successfully added watermark")
-                    messagebox.showinfo("Success", "Watermark added!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Add Watermark", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_pdf_to_png_section(self, parent):
-        """Convert PDF to PNG."""
-        frame = ttk.LabelFrame(parent, text="PDF to PNG", padding=10)
-        
-        file_selector = FileSelector(frame, "Input PDF File:", [("PDF files", "*.pdf")])
-        file_selector.pack(fill="x", pady=5)
-        
-        zip_var = tk.BooleanVar()
-        ttk.Checkbutton(frame, text="Zip output files", variable=zip_var).pack(pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            valid, error = validate_file_path(input_file, [".pdf"])
+                targets = sorted(Path(directory).glob("*.pdf"))
+            if not targets:
+                raise ValueError("No PDF files found")
+            out_path = Path(out) if out else None
+            merge_pdf(targets, out_path)
+            dest = out_path or Path(targets[0]).parent
+            return f"Merged {len(targets)} PDFs \u2192 {dest}"
+
+        status_bar.run_task(task, "Successfully merged PDF files!")
+
+    ctk.CTkButton(
+        parent, text="Merge PDFs", height=40, font=("", 14, "bold"),
+        command=execute,
+    ).pack(fill="x", pady=(8, 0))
+
+
+def build_split_pdf(parent, status_bar):
+    file_in = FileInput(parent, "Input PDF File", [("PDF files", "*.pdf")])
+    file_in.pack(fill="x", pady=(0, 16))
+
+    out_dir = DirectoryInput(parent, "Output Directory (optional)")
+    out_dir.pack(fill="x", pady=(0, 16))
+
+    parts = NumberInput(
+        parent, "Number of Parts (leave empty for individual pages)", ""
+    )
+    parts.pack(fill="x", pady=(0, 24))
+
+    def execute():
+        inp = file_in.get()
+        if not inp:
+            return status_bar.set_status("Please select an input file", "error")
+        valid, err = validate_file_path(inp, [".pdf"])
+        if not valid:
+            return status_bar.set_status(err, "error")
+        parts_val = parts.get()
+        od = out_dir.get() or None
+
+        def task():
+            from file_management.split_pdf import get_splitting_parts
+            from PyPDF2 import PdfReader
+
+            split_parts = None
+            if parts_val:
+                reader = PdfReader(str(inp))
+                pdf_len = len(reader.pages)
+                num = int(parts_val)
+                if num <= pdf_len:
+                    split_parts = get_splitting_parts(pdf_len, num)
+            split_pdf(Path(inp), split_parts, output_dir=od)
+            dest = od or str(Path(inp).parent)
+            return f"Split PDF \u2192 {dest}"
+
+        status_bar.run_task(task, "Successfully split PDF!")
+
+    ctk.CTkButton(
+        parent, text="Split PDF", height=40, font=("", 14, "bold"),
+        command=execute,
+    ).pack(fill="x", pady=(8, 0))
+
+
+def build_watermark(parent, status_bar):
+    file_in = FileInput(parent, "Input PDF File", [("PDF files", "*.pdf")])
+    file_in.pack(fill="x", pady=(0, 16))
+
+    wm_in = FileInput(parent, "Watermark PDF File", [("PDF files", "*.pdf")])
+    wm_in.pack(fill="x", pady=(0, 16))
+
+    file_out = OutputFileInput(
+        parent, "Output PDF File (optional)", [("PDF files", "*.pdf")], ".pdf"
+    )
+    file_out.pack(fill="x", pady=(0, 16))
+
+    pages = TextInput(
+        parent, "Page Indices",
+        placeholder="Comma-separated (e.g. 0,1,3) \u2014 leave empty for all pages",
+    )
+    pages.pack(fill="x", pady=(0, 24))
+
+    def execute():
+        inp = file_in.get()
+        wm = wm_in.get()
+        if not inp or not wm:
+            return status_bar.set_status(
+                "Please select both input and watermark files", "error"
+            )
+        for path, exts, label in [
+            (inp, [".pdf"], "Input"),
+            (wm, [".pdf"], "Watermark"),
+        ]:
+            valid, err = validate_file_path(path, exts)
             if not valid:
-                messagebox.showerror("Error", error)
-                return
-            
-            def run():
-                pdf_to_png(Path(input_file), zip_var.get())
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully converted {input_file} to PNG")
-                    messagebox.showinfo("Success", "Conversion completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Convert", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_pdf_to_jpg_section(self, parent):
-        """Convert PDF to JPG."""
-        frame = ttk.LabelFrame(parent, text="PDF to JPG", padding=10)
-        
-        file_selector = FileSelector(frame, "Input PDF File:", [("PDF files", "*.pdf")])
-        file_selector.pack(fill="x", pady=5)
-        
-        zip_var = tk.BooleanVar()
-        ttk.Checkbutton(frame, text="Zip output files", variable=zip_var).pack(pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            valid, error = validate_file_path(input_file, [".pdf"])
-            if not valid:
-                messagebox.showerror("Error", error)
-                return
-            
-            def run():
-                from file_management.pdf_to_jpg import pdf_to_jpg
-                pdf_to_jpg(Path(input_file), zip_var.get())
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully converted {input_file} to JPG")
-                    messagebox.showinfo("Success", "Conversion completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Convert", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_doc_to_pdf_section(self, parent):
-        """Convert DOC to PDF."""
-        frame = ttk.LabelFrame(parent, text="DOC to PDF", padding=10)
-        
-        file_selector = FileSelector(frame, "Input DOC File:", 
-                                    [("DOC files", "*.doc *.docx")])
-        file_selector.pack(fill="x", pady=5)
-        
-        output_selector = OutputFileSelector(frame, "Output PDF File (Optional):",
-                                            [("PDF files", "*.pdf")], ".pdf")
-        output_selector.pack(fill="x", pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            valid, error = validate_file_path(input_file, [".doc", ".docx"])
-            if not valid:
-                messagebox.showerror("Error", error)
-                return
-            
-            output_file = output_selector.get_path()
-            
-            def run():
-                doc_to_pdf(Path(input_file), Path(output_file) if output_file else None)
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully converted {input_file} to PDF")
-                    messagebox.showinfo("Success", "Conversion completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Convert", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_pdf_to_doc_section(self, parent):
-        """Convert PDF to DOC."""
-        frame = ttk.LabelFrame(parent, text="PDF to DOC", padding=10)
-        
-        file_selector = FileSelector(frame, "Input PDF File:", [("PDF files", "*.pdf")])
-        file_selector.pack(fill="x", pady=5)
-        
-        output_selector = OutputFileSelector(frame, "Output DOC File (Optional):",
-                                            [("DOC files", "*.docx")], ".docx")
-        output_selector.pack(fill="x", pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            valid, error = validate_file_path(input_file, [".pdf"])
-            if not valid:
-                messagebox.showerror("Error", error)
-                return
-            
-            output_file = output_selector.get_path()
-            
-            def run():
-                pdf_to_docx(Path(input_file), Path(output_file) if output_file else None)
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully converted {input_file} to DOC")
-                    messagebox.showinfo("Success", "Conversion completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Convert", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_csv_to_excel_section(self, parent):
-        """Convert CSV to Excel."""
-        frame = ttk.LabelFrame(parent, text="CSV to Excel", padding=10)
-        
-        file_selector = FileSelector(frame, "Input CSV File:", [("CSV files", "*.csv")])
-        file_selector.pack(fill="x", pady=5)
-        
-        output_selector = OutputFileSelector(frame, "Output Excel File (Optional):",
-                                            [("Excel files", "*.xlsx")], ".xlsx")
-        output_selector.pack(fill="x", pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            valid, error = validate_file_path(input_file, [".csv"])
-            if not valid:
-                messagebox.showerror("Error", error)
-                return
-            
-            output_file = output_selector.get_path()
-            
-            def run():
-                csv_to_excel(Path(input_file), Path(output_file) if output_file else None)
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully converted {input_file} to Excel")
-                    messagebox.showinfo("Success", "Conversion completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Convert", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_excel_to_csv_section(self, parent):
-        """Convert Excel to CSV."""
-        frame = ttk.LabelFrame(parent, text="Excel to CSV", padding=10)
-        
-        file_selector = FileSelector(frame, "Input Excel File:", 
-                                    [("Excel files", "*.xlsx *.xls")])
-        file_selector.pack(fill="x", pady=5)
-        
-        output_selector = OutputFileSelector(frame, "Output CSV File (Optional):",
-                                            [("CSV files", "*.csv")], ".csv")
-        output_selector.pack(fill="x", pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            valid, error = validate_file_path(input_file, [".xlsx", ".xls"])
-            if not valid:
-                messagebox.showerror("Error", error)
-                return
-            
-            output_file = output_selector.get_path()
-            
-            def run():
-                from file_management.excel_to_csv import excel_to_csv
-                excel_to_csv(Path(input_file), Path(output_file) if output_file else None)
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully converted {input_file} to CSV")
-                    messagebox.showinfo("Success", "Conversion completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Convert", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_csv_to_json_section(self, parent):
-        """Convert CSV to JSON."""
-        frame = ttk.LabelFrame(parent, text="CSV to JSON", padding=10)
-        
-        file_selector = FileSelector(frame, "Input CSV File:", [("CSV files", "*.csv")])
-        file_selector.pack(fill="x", pady=5)
-        
-        output_selector = OutputFileSelector(frame, "Output JSON File (Optional):",
-                                            [("JSON files", "*.json")], ".json")
-        output_selector.pack(fill="x", pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            valid, error = validate_file_path(input_file, [".csv"])
-            if not valid:
-                messagebox.showerror("Error", error)
-                return
-            
-            output_file = output_selector.get_path()
-            
-            def run():
-                csv_to_json(Path(input_file), Path(output_file) if output_file else None)
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully converted {input_file} to JSON")
-                    messagebox.showinfo("Success", "Conversion completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Convert", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_json_to_csv_section(self, parent):
-        """Convert JSON to CSV."""
-        frame = ttk.LabelFrame(parent, text="JSON to CSV", padding=10)
-        
-        file_selector = FileSelector(frame, "Input JSON File:", [("JSON files", "*.json")])
-        file_selector.pack(fill="x", pady=5)
-        
-        output_selector = OutputFileSelector(frame, "Output CSV File (Optional):",
-                                            [("CSV files", "*.csv")], ".csv")
-        output_selector.pack(fill="x", pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            valid, error = validate_file_path(input_file, [".json"])
-            if not valid:
-                messagebox.showerror("Error", error)
-                return
-            
-            output_file = output_selector.get_path()
-            
-            def run():
-                from file_management.json_to_csv import json_to_csv
-                json_to_csv(Path(input_file), Path(output_file) if output_file else None)
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully converted {input_file} to CSV")
-                    messagebox.showinfo("Success", "Conversion completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Convert", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
+                return status_bar.set_status(f"{label}: {err}", "error")
+
+        pages_str = pages.get()
+        if pages_str:
+            try:
+                page_list = [int(p.strip()) for p in pages_str.split(",")]
+            except ValueError:
+                return status_bar.set_status(
+                    "Invalid page indices \u2014 use comma-separated numbers", "error"
+                )
+        else:
+            page_list = "ALL"
+
+        out = file_out.get()
+        out_path = Path(out) if out else Path(inp).with_stem(f"{Path(inp).stem}-watermarked")
+
+        def task():
+            add_watermark(Path(inp), Path(wm), page_list, output_file=out_path)
+            return f"Saved to {out_path}"
+
+        status_bar.run_task(task, "Successfully added watermark!")
+
+    ctk.CTkButton(
+        parent, text="Add Watermark", height=40, font=("", 14, "bold"),
+        command=execute,
+    ).pack(fill="x", pady=(8, 0))
+
+
+def _build_pdf_to_image(parent, status_bar, convert_fn, fmt_upper):
+    file_in = FileInput(parent, "Input PDF File", [("PDF files", "*.pdf")])
+    file_in.pack(fill="x", pady=(0, 16))
+
+    out_dir = DirectoryInput(parent, "Output Directory (optional)")
+    out_dir.pack(fill="x", pady=(0, 16))
+
+    zip_cb = CheckboxInput(parent, "Zip output files")
+    zip_cb.pack(fill="x", pady=(0, 24))
+
+    def execute():
+        inp = file_in.get()
+        if not inp:
+            return status_bar.set_status("Please select an input file", "error")
+        valid, err = validate_file_path(inp, [".pdf"])
+        if not valid:
+            return status_bar.set_status(err, "error")
+        od = out_dir.get() or None
+
+        def task():
+            convert_fn(Path(inp), zip_cb.get(), output_dir=od)
+            dest = od or str(Path(inp).parent)
+            return f"Converted PDF to {fmt_upper} \u2192 {dest}"
+
+        status_bar.run_task(task, f"Successfully converted PDF to {fmt_upper}!")
+
+    ctk.CTkButton(
+        parent, text="Convert", height=40, font=("", 14, "bold"), command=execute
+    ).pack(fill="x", pady=(8, 0))
+
+
+def build_pdf_to_png(parent, status_bar):
+    _build_pdf_to_image(parent, status_bar, pdf_to_png, "PNG")
+
+
+def build_pdf_to_jpg(parent, status_bar):
+    _build_pdf_to_image(parent, status_bar, pdf_to_jpg, "JPG")
+
+
+def _build_doc_converter(parent, status_bar, label_in, ftypes_in, exts_in,
+                          label_out, ftypes_out, ext_out, convert_fn, msg):
+    file_in = FileInput(parent, label_in, ftypes_in)
+    file_in.pack(fill="x", pady=(0, 16))
+
+    file_out = OutputFileInput(parent, label_out, ftypes_out, ext_out)
+    file_out.pack(fill="x", pady=(0, 24))
+
+    def execute():
+        inp = file_in.get()
+        if not inp:
+            return status_bar.set_status("Please select an input file", "error")
+        valid, err = validate_file_path(inp, exts_in)
+        if not valid:
+            return status_bar.set_status(err, "error")
+        out = file_out.get()
+        out_path = Path(out) if out else Path(inp).with_suffix(ext_out)
+
+        def task():
+            convert_fn(Path(inp), out_path)
+            return f"Saved to {out_path}"
+
+        status_bar.run_task(task, msg)
+
+    ctk.CTkButton(
+        parent, text="Convert", height=40, font=("", 14, "bold"), command=execute
+    ).pack(fill="x", pady=(8, 0))
+
+
+def build_doc_to_pdf(parent, status_bar):
+    _build_doc_converter(
+        parent, status_bar,
+        "Input DOC/DOCX File", [("Word files", "*.doc *.docx")], [".doc", ".docx"],
+        "Output PDF File (optional)", [("PDF files", "*.pdf")], ".pdf",
+        doc_to_pdf, "Successfully converted to PDF!",
+    )
+
+
+def build_pdf_to_doc(parent, status_bar):
+    _build_doc_converter(
+        parent, status_bar,
+        "Input PDF File", [("PDF files", "*.pdf")], [".pdf"],
+        "Output DOCX File (optional)", [("Word files", "*.docx")], ".docx",
+        pdf_to_docx, "Successfully converted to DOCX!",
+    )
+
+
+def build_compress_pdf(parent, status_bar):
+    file_in = FileInput(parent, "Input PDF File", [("PDF files", "*.pdf")])
+    file_in.pack(fill="x", pady=(0, 16))
+
+    file_out = OutputFileInput(
+        parent, "Output PDF File (optional)", [("PDF files", "*.pdf")], ".pdf"
+    )
+    file_out.pack(fill="x", pady=(0, 16))
+
+    power = ChoiceInput(
+        parent, "Compression Level",
+        ["1 - Light", "2 - Medium", "3 - Maximum"], "2 - Medium",
+    )
+    power.pack(fill="x", pady=(0, 24))
+
+    def execute():
+        inp = file_in.get()
+        if not inp:
+            return status_bar.set_status("Please select an input file", "error")
+        valid, err = validate_file_path(inp, [".pdf"])
+        if not valid:
+            return status_bar.set_status(err, "error")
+        out = file_out.get()
+        p = int(power.get()[0])
+        out_path = Path(out) if out else Path(inp).with_stem(f"{Path(inp).stem}-compressed")
+
+        def task():
+            compress_pdf(Path(inp), out_path, p)
+            return f"Saved to {out_path}"
+
+        status_bar.run_task(task, "Successfully compressed PDF!")
+
+    ctk.CTkButton(
+        parent, text="Compress PDF", height=40, font=("", 14, "bold"),
+        command=execute,
+    ).pack(fill="x", pady=(8, 0))
+
+
+def build_rotate_pdf(parent, status_bar):
+    file_in = FileInput(parent, "Input PDF File", [("PDF files", "*.pdf")])
+    file_in.pack(fill="x", pady=(0, 16))
+
+    file_out = OutputFileInput(
+        parent, "Output PDF File (optional)", [("PDF files", "*.pdf")], ".pdf"
+    )
+    file_out.pack(fill="x", pady=(0, 16))
+
+    rotation = ChoiceInput(
+        parent, "Rotation", ["90°", "180°", "270°"], "90°"
+    )
+    rotation.pack(fill="x", pady=(0, 8))
+
+    pages_input = TextInput(
+        parent, "Pages to Rotate",
+        placeholder="Comma-separated 0-based indices (leave empty for all)",
+    )
+    pages_input.pack(fill="x", pady=(0, 24))
+
+    def execute():
+        inp = file_in.get()
+        if not inp:
+            return status_bar.set_status("Please select an input file", "error")
+        valid, err = validate_file_path(inp, [".pdf"])
+        if not valid:
+            return status_bar.set_status(err, "error")
+        out = file_out.get()
+        deg = int(rotation.get().replace("°", ""))
+        pages_str = pages_input.get()
+        page_list = None
+        if pages_str:
+            try:
+                page_list = [int(p.strip()) for p in pages_str.split(",")]
+            except ValueError:
+                return status_bar.set_status(
+                    "Invalid page indices — use comma-separated numbers", "error"
+                )
+        out_path = Path(out) if out else Path(inp).with_stem(f"{Path(inp).stem}-rotated")
+
+        def task():
+            rotate_pdf(Path(inp), deg, page_list, out_path)
+            return f"Saved to {out_path}"
+
+        status_bar.run_task(task, "Successfully rotated PDF pages!")
+
+    ctk.CTkButton(
+        parent, text="Rotate Pages", height=40, font=("", 14, "bold"),
+        command=execute,
+    ).pack(fill="x", pady=(8, 0))
+
+
+def build_csv_to_excel(parent, status_bar):
+    _build_doc_converter(
+        parent, status_bar,
+        "Input CSV File", [("CSV files", "*.csv")], [".csv"],
+        "Output Excel File (optional)", [("Excel files", "*.xlsx")], ".xlsx",
+        csv_to_excel, "Successfully converted CSV to Excel!",
+    )
+
+
+def build_excel_to_csv(parent, status_bar):
+    _build_doc_converter(
+        parent, status_bar,
+        "Input Excel File", [("Excel files", "*.xlsx *.xls")], [".xlsx", ".xls"],
+        "Output CSV File (optional)", [("CSV files", "*.csv")], ".csv",
+        excel_to_csv, "Successfully converted Excel to CSV!",
+    )
+
+
+def build_csv_to_json(parent, status_bar):
+    _build_doc_converter(
+        parent, status_bar,
+        "Input CSV File", [("CSV files", "*.csv")], [".csv"],
+        "Output JSON File (optional)", [("JSON files", "*.json")], ".json",
+        csv_to_json, "Successfully converted CSV to JSON!",
+    )
+
+
+def build_json_to_csv(parent, status_bar):
+    _build_doc_converter(
+        parent, status_bar,
+        "Input JSON File", [("JSON files", "*.json")], [".json"],
+        "Output CSV File (optional)", [("CSV files", "*.csv")], ".csv",
+        json_to_csv, "Successfully converted JSON to CSV!",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Exported section list
+# ---------------------------------------------------------------------------
+
+FILE_SECTIONS = [
+    (
+        "PDF OPERATIONS",
+        [
+            {
+                "name": "Merge PDFs",
+                "description": "Combine multiple PDF files into a single document",
+                "build_fn": build_merge_pdf,
+            },
+            {
+                "name": "Split PDF",
+                "description": "Split a PDF into individual pages or equal parts",
+                "build_fn": build_split_pdf,
+            },
+            {
+                "name": "Add Watermark",
+                "description": "Overlay a watermark PDF onto selected pages",
+                "build_fn": build_watermark,
+            },
+            {
+                "name": "Compress PDF",
+                "description": "Reduce PDF file size by compressing content streams",
+                "build_fn": build_compress_pdf,
+            },
+            {
+                "name": "Rotate Pages",
+                "description": "Rotate selected PDF pages by 90°, 180°, or 270°",
+                "build_fn": build_rotate_pdf,
+            },
+            {
+                "name": "PDF \u2192 PNG",
+                "description": "Convert PDF pages to PNG images",
+                "build_fn": build_pdf_to_png,
+            },
+            {
+                "name": "PDF \u2192 JPG",
+                "description": "Convert PDF pages to JPG images",
+                "build_fn": build_pdf_to_jpg,
+            },
+        ],
+    ),
+    (
+        "DOCUMENTS",
+        [
+            {
+                "name": "DOC \u2192 PDF",
+                "description": "Convert Word documents to PDF format",
+                "build_fn": build_doc_to_pdf,
+            },
+            {
+                "name": "PDF \u2192 DOC",
+                "description": "Convert PDF documents to editable Word format",
+                "build_fn": build_pdf_to_doc,
+            },
+        ],
+    ),
+    (
+        "DATA FORMATS",
+        [
+            {
+                "name": "CSV \u2192 Excel",
+                "description": "Convert CSV files to Excel spreadsheet format",
+                "build_fn": build_csv_to_excel,
+            },
+            {
+                "name": "Excel \u2192 CSV",
+                "description": "Convert Excel spreadsheets to CSV format",
+                "build_fn": build_excel_to_csv,
+            },
+            {
+                "name": "CSV \u2192 JSON",
+                "description": "Convert CSV data to JSON format",
+                "build_fn": build_csv_to_json,
+            },
+            {
+                "name": "JSON \u2192 CSV",
+                "description": "Convert JSON data to CSV tabular format",
+                "build_fn": build_json_to_csv,
+            },
+        ],
+    ),
+]

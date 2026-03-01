@@ -11,24 +11,25 @@ def add_watermark(
     input_file: Path,
     watermark_pdf: Path,
     page_indices: Union[str, List[int]] = "ALL",
+    output_file: Path = None,
 ) -> None:
     try:
         reader = PdfReader(input_file)
         watermark_reader = PdfReader(watermark_pdf)
     except PdfReadError as e:
         print(f"Error reading PDF files: {e}")
-        sys.exit(1)
+        raise
 
     if page_indices == "ALL":
         page_indices = list(range(len(reader.pages)))
 
     if not watermark_reader.pages:
-        print("Error: The watermark PDF has no pages.")
-        sys.exit(1)
+        raise ValueError("The watermark PDF has no pages.")
 
     watermark_page = watermark_reader.pages[0]
 
-    output_file = input_file.with_stem(f"{input_file.stem}-watermark.pdf")
+    if output_file is None:
+        output_file = input_file.with_stem(f"{input_file.stem}-watermarked")
 
     writer = PdfWriter()
     for index in page_indices:
@@ -36,7 +37,7 @@ def add_watermark(
             content_page = reader.pages[index]
         except IndexError:
             print(f"Error: Page index {index} out of range.")
-            sys.exit(1)
+            raise
 
         # Merge the watermark with the content page
         content_page.merge_page(watermark_page)
@@ -48,7 +49,7 @@ def add_watermark(
         print(f"Watermarked PDF saved as: {output_file}")
     except Exception as e:
         print(f"Error writing output PDF: {e}")
-        sys.exit(1)
+        raise
 
 
 def main():

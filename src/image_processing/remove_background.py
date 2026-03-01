@@ -1,17 +1,31 @@
 import sys
 import argparse
 from pathlib import Path
-import numpy as np
 from PIL import Image, UnidentifiedImageError
-import rembg
 
 
-def remove_background(input_files):
+def remove_background(input_files, output_dir=None):
+    try:
+        import numpy as np
+        import rembg
+    except ImportError:
+        raise ImportError(
+            "rembg is required for background removal. "
+            "Install it with: pip install rembg[cpu]"
+        )
+
+    if output_dir is not None:
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
     for file in input_files:
         try:
             image = Image.open(file)
             file_ext = file.suffix.lower()
-            output_file = file.with_stem(f"{file.stem}-background-removed")
+            if output_dir:
+                output_file = output_dir / f"{file.stem}-background-removed{file_ext}"
+            else:
+                output_file = file.with_stem(f"{file.stem}-background-removed")
 
             input_array = np.array(image)
             output_array = rembg.remove(input_array)

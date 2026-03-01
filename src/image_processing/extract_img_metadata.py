@@ -51,13 +51,13 @@ def extract_img_metadata(input_file: Path, save_flag: bool = False) -> None:
 
     except FileNotFoundError:
         print(f"Error: File '{input_file}' not found.")
-        sys.exit(1)
+        raise
     except Image.UnidentifiedImageError:
         print(f"Error: Cannot identify image file '{input_file}'.")
-        sys.exit(1)
+        raise
     except Exception as e:
         print(f"Unexpected error: {e}")
-        sys.exit(1)
+        raise
 
 
 def main():

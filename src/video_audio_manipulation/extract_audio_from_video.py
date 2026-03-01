@@ -21,8 +21,7 @@ def extract_audio_from_video(
         "opus",
     ]
     if audio_format not in audio_extensions:
-        print(f"Error: Unsupported audio format '{audio_format}'.")
-        sys.exit(1)
+        raise ValueError(f"Unsupported audio format '{audio_format}'.")
 
     if output_file is None:
         output_file = input_file.with_name(
@@ -36,15 +35,14 @@ def extract_audio_from_video(
         video = VideoFileClip(str(input_file))
         audio = video.audio
         if audio is None:
-            print(f"Error: No audio stream found in '{input_file}'.")
-            sys.exit(1)
+            raise ValueError(f"No audio stream found in '{input_file}'.")
         audio.write_audiofile(str(output_file))
         print(
             f"Audio has been successfully extracted from '{input_file}' and saved as '{output_file}'"
         )
     except Exception as e:
         print(f"Error during audio extraction: {e}")
-        sys.exit(1)
+        raise
 
 
 def is_video(file_path: Path) -> bool:

@@ -20,8 +20,11 @@ def validate_quality(value):
         )
 
 
-def heic_to_jpg(input_files, output_directory, quality=95):
-    output_directory = Path(input_files[0]).parent
+def heic_to_jpg(input_files, output_directory=None, quality=95):
+    if output_directory is None:
+        output_directory = Path(input_files[0]).parent
+    else:
+        output_directory = Path(output_directory)
 
     for file in input_files:
         try:

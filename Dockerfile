@@ -1,25 +1,23 @@
-FROM python:3.12.2-slim
+FROM python:3.13-slim
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libgl1-mesa-dev \
     libtiff-dev \
     libjpeg-dev \
     zlib1g-dev \
+    poppler-utils \
+    tesseract-ocr \
     && rm -rf /var/lib/apt/lists/*
 
 ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app/
 
 WORKDIR /app
 
-COPY requirements.txt /app/
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
-    
-COPY . /app/
-
-RUN pip install -e .
+COPY . .
+RUN pip install --no-cache-dir .
 
 CMD ["/bin/bash"]

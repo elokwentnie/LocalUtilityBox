@@ -6,9 +6,13 @@ from zipfile import ZipFile
 from io import BytesIO
 
 
-def pdf_to_png(input_file: Path, zip_output: bool = False) -> None:
+def pdf_to_png(input_file: Path, zip_output: bool = False, output_dir: Path = None) -> None:
     base_name = input_file.stem
-    output_dir = input_file.parent
+    if output_dir is None:
+        output_dir = input_file.parent
+    else:
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
 
     try:
         # Convert PDF to a list of images
@@ -41,7 +45,7 @@ def pdf_to_png(input_file: Path, zip_output: bool = False) -> None:
             print("Successfully converted PDF pages to PNG images.")
     except Exception as e:
         print(f"Error processing {input_file}: {e}")
-        sys.exit(1)
+        raise
 
 
 def main():

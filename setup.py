@@ -1,21 +1,36 @@
 #!/usr/bin/env python
 
 from setuptools import setup, find_packages
+from pathlib import Path
 
-# Function to read the requirements.txt file
+
 def read_requirements():
-    with open('requirements.txt') as req_file:
-        return req_file.readlines()
+    return Path('requirements.txt').read_text().strip().splitlines()
+
 
 setup(
     name='LocalUtilityBox',
     version='1.0.0',
     packages=find_packages(where='src'),
+    py_modules=['cli'],
     package_dir={'': 'src'},
+    python_requires='>=3.9',
     install_requires=read_requirements(),
+    extras_require={
+        'rembg': ['rembg[cpu]'],
+        'dnd': ['tkinterdnd2'],
+        'qr': ['qrcode[pil]'],
+    },
     description='A versatile utility for local image and document processing',
-    long_description='LocalUtilityBox provides command-line and GUI tools for image processing, PDF management, document conversion, and data format conversion. All processing is done locally to keep your data private.',
+    long_description=Path('README.md').read_text(encoding='utf-8'),
+    long_description_content_type='text/markdown',
     author='LocalUtilityBox Contributors',
+    url='https://github.com/elokwentnie/LocalUtilityBox',
+    classifiers=[
+        'Programming Language :: Python :: 3',
+        'License :: OSI Approved :: MIT License',
+        'Operating System :: OS Independent',
+    ],
     entry_points={
         'console_scripts': [
             'webp_to_jpg=image_processing.webp_to_jpg:main',
@@ -30,8 +45,11 @@ setup(
             'remove_background=image_processing.remove_background:main',
             'extract_img_metadata=image_processing.extract_img_metadata:main',
             'extract_text_from_img=image_processing.extract_text_from_img:main',
+            'long_png_to_pdf=image_processing.long_png_to_pdf:main',
 
             'merge_pdf=file_management.merge_pdf:main',
+            'compress_pdf=file_management.compress_pdf:main',
+            'rotate_pdf=file_management.rotate_pdf:main',
             'add_watermark=file_management.add_watermark:main',
             'doc_to_pdf=file_management.doc_to_pdf:main',
             'pdf_to_doc=file_management.pdf_to_doc:main',
@@ -44,9 +62,13 @@ setup(
             'json_to_csv=file_management.json_to_csv:main',
 
             'extract_audio_from_video=video_audio_manipulation.extract_audio_from_video:main',
-            
+            'video_to_gif=video_audio_manipulation.video_to_gif:main',
+            'generate_qr=image_processing.generate_qr:main',
+
+            'localutilitybox=cli:main',
+            'lub=cli:main',
             'localutilitybox-gui=gui.main_gui:main',
             'lub-gui=gui.main_gui:main',
         ]
-    }
+    },
 )

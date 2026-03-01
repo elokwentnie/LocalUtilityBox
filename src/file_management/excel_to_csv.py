@@ -21,13 +21,13 @@ def excel_to_csv(
         print(f"Conversion successful: {output_file}")
     except FileNotFoundError:
         print(f"Error: The file {input_file} was not found.")
-        sys.exit(1)
+        raise
     except pd.errors.EmptyDataError:
         print(f"Error: The file {input_file} is empty.")
-        sys.exit(1)
+        raise
     except Exception as e:
         print(f"Unexpected error: {e}")
-        sys.exit(1)
+        raise
 
 
 def parse_separator_argument(arg: str) -> str:

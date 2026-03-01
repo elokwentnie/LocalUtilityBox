@@ -18,13 +18,13 @@ def json_to_csv(input_file: Path, output_file: Path = None) -> None:
         print(f"Conversion successful: {output_file}")
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON from {input_file}: {e}")
-        sys.exit(1)
+        raise
     except FileNotFoundError:
         print(f"Error: The file {input_file} was not found.")
-        sys.exit(1)
+        raise
     except Exception as e:
         print(f"Unexpected error: {e}")
-        sys.exit(1)
+        raise
 
 
 def main():

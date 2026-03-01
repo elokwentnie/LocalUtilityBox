@@ -14,13 +14,13 @@ def png_to_jpg(input_file: Path, output_file: Path = None, quality: int = 95) ->
         print(f"Conversion successful: {output_file}")
     except FileNotFoundError:
         print(f"Error: File '{input_file}' not found.")
-        sys.exit(1)
+        raise
     except UnidentifiedImageError:
         print(f"Error: Cannot identify image file '{input_file}'.")
-        sys.exit(1)
+        raise
     except Exception as e:
         print(f"Unexpected error: {e}")
-        sys.exit(1)
+        raise
 
 
 def validate_quality(value: str) -> int:

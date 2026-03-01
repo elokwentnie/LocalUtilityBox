@@ -16,10 +16,10 @@ def img_to_greyscale(
             print(f"Conversion successful: {output_file}")
     except UnidentifiedImageError:
         print(f"Error: Cannot identify image file '{input_file}'.")
-        sys.exit(1)
+        raise
     except Exception as e:
         print(f"Error processing '{input_file}': {e}")
-        sys.exit(1)
+        raise
 
 
 def validate_quality(value: str) -> int:

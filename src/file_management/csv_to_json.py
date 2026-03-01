@@ -18,13 +18,13 @@ def csv_to_json(input_file: Path, output_file: Path = None) -> None:
         print(f"Conversion successful: {output_file}")
     except pd.errors.ParserError as e:
         print(f"Error parsing CSV file {input_file}: {e}")
-        sys.exit(1)
+        raise
     except FileNotFoundError as e:
         print(f"Error: {e}")
-        sys.exit(1)
+        raise
     except Exception as e:
         print(f"Unexpected error: {e}")
-        sys.exit(1)
+        raise
 
 
 def main():

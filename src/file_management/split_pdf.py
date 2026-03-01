@@ -6,9 +6,13 @@ from PyPDF2 import PdfReader, PdfWriter
 from PyPDF2.errors import PdfReadError
 
 
-def split_pdf(input_file: Path, parts: Optional[List[List[int]]] = None) -> None:
+def split_pdf(input_file: Path, parts: Optional[List[List[int]]] = None, output_dir: Path = None) -> None:
     base_name = input_file.stem
-    output_dir = input_file.parent
+    if output_dir is None:
+        output_dir = input_file.parent
+    else:
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
 
     try:
         reader = PdfReader(str(input_file))
@@ -27,10 +31,10 @@ def split_pdf(input_file: Path, parts: Optional[List[List[int]]] = None) -> None
 
     except PdfReadError as e:
         print(f"Error reading PDF file '{input_file}': {e}")
-        sys.exit(1)
+        raise
     except Exception as e:
         print(f"Unexpected error: {e}")
-        sys.exit(1)
+        raise
 
 
 def write_pages_to_pdf(pages: List, output_file: Path) -> None:
@@ -43,7 +47,7 @@ def write_pages_to_pdf(pages: List, output_file: Path) -> None:
         print(f"Successfully created: {output_file}")
     except Exception as e:
         print(f"Error writing to file '{output_file}': {e}")
-        sys.exit(1)
+        raise
 
 
 def parse_parts_argument(arg: str) -> int:

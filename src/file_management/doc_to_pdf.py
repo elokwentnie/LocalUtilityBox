@@ -14,7 +14,7 @@ def doc_to_pdf(input_file: Path, output_file: Path = None) -> None:
         print(f"Conversion successful: {output_file}")
     except Exception as e:
         print(f"Error converting {input_file} to PDF: {e}")
-        sys.exit(1)
+        raise
 
 
 def main():

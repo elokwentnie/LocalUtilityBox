@@ -8,24 +8,20 @@ import img2pdf
 def img_to_pdf(input_file: Path, output_file: Path = None) -> None:
     if output_file is None:
         output_file = input_file.with_suffix(".pdf")
-    try:
-        # Ensure the image can be opened
-        with Image.open(input_file) as img:
-            pass  # Image successfully opened
 
-        # Convert the image to PDF
-        with open(output_file, "wb") as f:
-            f.write(img2pdf.convert(str(input_file)))
-        print(f"Conversion successful: {output_file}")
-    except FileNotFoundError:
-        print(f"Error: File '{input_file}' not found.")
-        sys.exit(1)
-    except UnidentifiedImageError:
-        print(f"Error: Cannot identify image file '{input_file}'.")
-        sys.exit(1)
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        sys.exit(1)
+    with Image.open(input_file) as img:
+        if img.mode in ("RGBA", "LA", "PA"):
+            img = img.convert("RGB")
+            temp_path = input_file.with_stem(f"{input_file.stem}_rgb_tmp")
+            img.save(temp_path, "JPEG", quality=95)
+            with open(output_file, "wb") as f:
+                f.write(img2pdf.convert(str(temp_path)))
+            temp_path.unlink()
+        else:
+            with open(output_file, "wb") as f:
+                f.write(img2pdf.convert(str(input_file)))
+
+    print(f"Conversion successful: {output_file}")
 
 
 def main():

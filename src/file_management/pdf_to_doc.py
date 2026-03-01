@@ -15,7 +15,7 @@ def pdf_to_docx(input_file: Path, output_file: Path = None) -> None:
         print(f"Conversion successful: {output_file}")
     except Exception as e:
         print(f"Error converting {input_file} to DOCX: {e}")
-        sys.exit(1)
+        raise
 
 
 def main():

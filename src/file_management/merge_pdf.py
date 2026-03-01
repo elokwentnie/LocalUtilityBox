@@ -33,7 +33,7 @@ def merge_pdf(input_files: list[Path], output_file: Path = None) -> None:
         print(f"PDFs merged successfully into '{output_file}'")
     except Exception as e:
         print(f"Error writing output PDF: {e}")
-        sys.exit(1)
+        raise
     finally:
         merger.close()
 

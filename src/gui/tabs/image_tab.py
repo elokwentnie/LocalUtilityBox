@@ -1,16 +1,14 @@
-"""Image Processing Tab."""
-import tkinter as tk
-from tkinter import ttk, messagebox
+"""Image Processing Tool definitions."""
+import customtkinter as ctk
 from pathlib import Path
-import sys
+from PIL import Image
 
 from ..widgets import (
-    FileSelector, DirectorySelector, MultiFileSelector, OutputFileSelector,
-    ParameterInput, ChoiceSelector, StatusDisplay
+    FileInput, DirectoryInput, MultiFileInput, OutputFileInput,
+    ChoiceInput, NumberInput, CheckboxInput,
 )
-from ..utils import run_in_thread, validate_file_path, validate_directory_path
+from ..utils import validate_file_path
 
-# Import image processing functions (absolute for installed package)
 from image_processing.webp_to_jpg import webp_to_jpg
 from image_processing.webp_to_png import webp_to_png
 from image_processing.jpg_to_png import jpg_to_png
@@ -20,642 +18,565 @@ from image_processing.heic_to_jpg import heic_to_jpg
 from image_processing.img_to_pdf import img_to_pdf
 from image_processing.img_to_greyscale import img_to_greyscale
 from image_processing.reduce_img_size import reduce_img_size
-from image_processing.remove_background import remove_background
+try:
+    from image_processing.remove_background import remove_background
+    _HAS_REMBG = True
+except ImportError:
+    _HAS_REMBG = False
+from image_processing.long_png_to_pdf import long_png_to_pdf
 from image_processing.extract_img_metadata import extract_img_metadata
 from image_processing.extract_text_from_img import extract_text_from_img
+try:
+    from image_processing.generate_qr import generate_qr
+    _HAS_QR = True
+except ImportError:
+    _HAS_QR = False
 
 
-class ImageTab(ttk.Frame):
-    """Image Processing Tab."""
-    
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.status = StatusDisplay(self)
-        self.status.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # Create notebook for organizing tools
-        notebook = ttk.Notebook(self)
-        notebook.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # Format Conversion Tab
-        format_frame = ttk.Frame(notebook)
-        self._create_format_conversion_section(format_frame)
-        notebook.add(format_frame, text="Format Conversion")
-        
-        # Image Processing Tab
-        processing_frame = ttk.Frame(notebook)
-        self._create_image_processing_section(processing_frame)
-        notebook.add(processing_frame, text="Image Processing")
-        
-        # Extraction Tab
-        extraction_frame = ttk.Frame(notebook)
-        self._create_extraction_section(extraction_frame)
-        notebook.add(extraction_frame, text="Extraction")
-        
-        self.status.pack(fill="both", expand=True, padx=10, pady=10)
-    
-    def _create_format_conversion_section(self, parent):
-        """Create format conversion tools section."""
-        canvas = tk.Canvas(parent)
-        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
-        scrollable_frame = ttk.Frame(canvas)
-        
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-        
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
-        
-        # WebP to JPG
-        self._create_webp_to_jpg_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # WebP to PNG
-        self._create_webp_to_png_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # JPG to PNG
-        self._create_jpg_to_png_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # PNG to JPG
-        self._create_png_to_jpg_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # TIFF to JPG
-        self._create_tiff_to_jpg_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # HEIC to JPG
-        self._create_heic_to_jpg_section(scrollable_frame)
-        
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-    
-    def _create_image_processing_section(self, parent):
-        """Create image processing tools section."""
-        canvas = tk.Canvas(parent)
-        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
-        scrollable_frame = ttk.Frame(canvas)
-        
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-        
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
-        
-        # Image to PDF
-        self._create_img_to_pdf_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # Image to Greyscale
-        self._create_img_to_greyscale_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # Reduce Image Size
-        self._create_reduce_img_size_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # Remove Background
-        self._create_remove_background_section(scrollable_frame)
-        
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-    
-    def _create_extraction_section(self, parent):
-        """Create extraction tools section."""
-        canvas = tk.Canvas(parent)
-        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
-        scrollable_frame = ttk.Frame(canvas)
-        
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-        
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
-        
-        # Extract Metadata
-        self._create_extract_metadata_section(scrollable_frame)
-        ttk.Separator(scrollable_frame, orient="horizontal").pack(fill="x", pady=10)
-        
-        # Extract Text from Image
-        self._create_extract_text_section(scrollable_frame)
-        
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-    
-    def _create_webp_to_jpg_section(self, parent):
-        """WebP to JPG converter."""
-        frame = ttk.LabelFrame(parent, text="WebP to JPG", padding=10)
-        
-        file_selector = FileSelector(frame, "Input WebP File:", [("WebP files", "*.webp")])
-        file_selector.pack(fill="x", pady=5)
-        
-        output_selector = OutputFileSelector(frame, "Output JPG File (Optional):", 
-                                            [("JPG files", "*.jpg")], ".jpg")
-        output_selector.pack(fill="x", pady=5)
-        
-        bg_frame = ttk.Frame(frame)
-        bg_choice = ChoiceSelector(bg_frame, "Background Color:", ["black", "white"], "black")
-        bg_choice.pack()
-        bg_frame.pack(fill="x", pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            valid, error = validate_file_path(input_file, [".webp"])
-            if not valid:
-                messagebox.showerror("Error", error)
-                return
-            
-            output_file = output_selector.get_path()
-            bg_color = bg_choice.get_value()
-            
-            def run():
-                webp_to_jpg(Path(input_file), Path(output_file) if output_file else None, bg_color)
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully converted {input_file} to JPG")
-                    messagebox.showinfo("Success", "Conversion completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Convert", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_webp_to_png_section(self, parent):
-        """WebP to PNG converter."""
-        frame = ttk.LabelFrame(parent, text="WebP to PNG", padding=10)
-        
-        file_selector = FileSelector(frame, "Input WebP File:", [("WebP files", "*.webp")])
-        file_selector.pack(fill="x", pady=5)
-        
-        output_selector = OutputFileSelector(frame, "Output PNG File (Optional):",
-                                            [("PNG files", "*.png")], ".png")
-        output_selector.pack(fill="x", pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            valid, error = validate_file_path(input_file, [".webp"])
-            if not valid:
-                messagebox.showerror("Error", error)
-                return
-            
-            output_file = output_selector.get_path()
-            
-            def run():
-                webp_to_png(Path(input_file), Path(output_file) if output_file else None)
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully converted {input_file} to PNG")
-                    messagebox.showinfo("Success", "Conversion completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Convert", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_jpg_to_png_section(self, parent):
-        """JPG to PNG converter."""
-        frame = ttk.LabelFrame(parent, text="JPG to PNG", padding=10)
-        
-        file_selector = FileSelector(frame, "Input JPG File:", 
-                                     [("JPG files", "*.jpg *.jpeg")])
-        file_selector.pack(fill="x", pady=5)
-        
-        output_selector = OutputFileSelector(frame, "Output PNG File (Optional):",
-                                            [("PNG files", "*.png")], ".png")
-        output_selector.pack(fill="x", pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            valid, error = validate_file_path(input_file, [".jpg", ".jpeg"])
-            if not valid:
-                messagebox.showerror("Error", error)
-                return
-            
-            output_file = output_selector.get_path()
-            
-            def run():
-                from image_processing.jpg_to_png import jpg_to_png
-                jpg_to_png(Path(input_file), Path(output_file) if output_file else None, 95)
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully converted {input_file} to PNG")
-                    messagebox.showinfo("Success", "Conversion completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Convert", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_png_to_jpg_section(self, parent):
-        """PNG to JPG converter."""
-        frame = ttk.LabelFrame(parent, text="PNG to JPG", padding=10)
-        
-        file_selector = FileSelector(frame, "Input PNG File:", [("PNG files", "*.png")])
-        file_selector.pack(fill="x", pady=5)
-        
-        output_selector = OutputFileSelector(frame, "Output JPG File (Optional):",
-                                            [("JPG files", "*.jpg")], ".jpg")
-        output_selector.pack(fill="x", pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            valid, error = validate_file_path(input_file, [".png"])
-            if not valid:
-                messagebox.showerror("Error", error)
-                return
-            
-            output_file = output_selector.get_path()
-            
-            def run():
-                png_to_jpg(Path(input_file), Path(output_file) if output_file else None, 95)
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully converted {input_file} to JPG")
-                    messagebox.showinfo("Success", "Conversion completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Convert", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_tiff_to_jpg_section(self, parent):
-        """TIFF to JPG converter."""
-        frame = ttk.LabelFrame(parent, text="TIFF to JPG", padding=10)
-        
-        file_selector = FileSelector(frame, "Input TIFF File:", 
-                                     [("TIFF files", "*.tiff *.tif")])
-        file_selector.pack(fill="x", pady=5)
-        
-        output_selector = OutputFileSelector(frame, "Output JPG File (Optional):",
-                                            [("JPG files", "*.jpg")], ".jpg")
-        output_selector.pack(fill="x", pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            valid, error = validate_file_path(input_file, [".tiff", ".tif"])
-            if not valid:
-                messagebox.showerror("Error", error)
-                return
-            
-            output_file = output_selector.get_path()
-            
-            def run():
-                tiff_to_jpg(Path(input_file), Path(output_file) if output_file else None)
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully converted {input_file} to JPG")
-                    messagebox.showinfo("Success", "Conversion completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Convert", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_heic_to_jpg_section(self, parent):
-        """HEIC to JPG converter."""
-        frame = ttk.LabelFrame(parent, text="HEIC to JPG", padding=10)
-        
-        file_selector = MultiFileSelector(frame, "Input HEIC Files:", 
-                                         [("HEIC files", "*.heic *.HEIC")])
-        file_selector.pack(fill="x", pady=5)
-        
-        dir_selector = DirectorySelector(frame, "Or Select Directory:")
-        dir_selector.pack(fill="x", pady=5)
-        
-        quality_input = ParameterInput(frame, "Quality (1-100):", "95", 1, 100)
-        quality_input.pack(fill="x", pady=5)
-        
-        def execute():
-            files = file_selector.get_paths()
-            directory = dir_selector.get_path()
-            
-            if not files and not directory:
-                messagebox.showerror("Error", "Please select files or a directory.")
-                return
-            
-            quality = quality_input.get_value() or 95
-            
-            def run():
-                if files:
-                    heic_to_jpg([str(f) for f in files], None, quality)
-                else:
-                    from pathlib import Path
-                    heic_files = list(Path(directory).glob("*.heic")) + \
-                                list(Path(directory).glob("*.HEIC"))
-                    if heic_files:
-                        heic_to_jpg([str(f) for f in heic_files], None, quality)
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message("Successfully converted HEIC files to JPG")
-                    messagebox.showinfo("Success", "Conversion completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Convert", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_img_to_pdf_section(self, parent):
-        """Image to PDF converter."""
-        frame = ttk.LabelFrame(parent, text="Image to PDF", padding=10)
-        
-        file_selector = MultiFileSelector(frame, "Input Image Files:",
-                                          [("Image files", "*.jpg *.jpeg *.png *.gif *.bmp")])
-        file_selector.pack(fill="x", pady=5)
-        
-        output_selector = OutputFileSelector(frame, "Output PDF File (Optional):",
-                                            [("PDF files", "*.pdf")], ".pdf")
-        output_selector.pack(fill="x", pady=5)
-        
-        def execute():
-            files = file_selector.get_paths()
-            if not files:
-                messagebox.showerror("Error", "Please select at least one image file.")
-                return
-            
-            output_file = output_selector.get_path()
-            
-            def run():
+# ---------------------------------------------------------------------------
+# Unified format conversion helpers
+# ---------------------------------------------------------------------------
+
+def _convert_file_to_jpg(file_path: str, quality: int = 95, output_dir=None):
+    """Convert a single file to JPG, dispatching to the right function by extension."""
+    p = Path(file_path)
+    ext = p.suffix.lower()
+    out_path = Path(output_dir) / f"{p.stem}.jpg" if output_dir else None
+
+    if ext == ".webp":
+        webp_to_jpg(p, output_file=out_path)
+    elif ext in (".heic", ".heif"):
+        heic_to_jpg([str(p)], output_dir, quality)
+    elif ext == ".png":
+        png_to_jpg(p, output_file=out_path, quality=quality)
+    elif ext in (".tiff", ".tif"):
+        tiff_to_jpg(p, output_file=out_path, quality=quality)
+    elif ext in (".jpg", ".jpeg"):
+        print(f"Skipping '{p.name}': already a JPG")
+    else:
+        out = out_path or p.with_suffix(".jpg")
+        img = Image.open(p)
+        if img.mode in ("RGBA", "LA", "PA", "P"):
+            img = img.convert("RGB")
+        img.save(out, "JPEG", quality=quality)
+        print(f"Conversion successful: {out}")
+
+
+def _convert_file_to_png(file_path: str, quality: int = 95, output_dir=None):
+    """Convert a single file to PNG, dispatching to the right function by extension."""
+    p = Path(file_path)
+    ext = p.suffix.lower()
+    out_path = Path(output_dir) / f"{p.stem}.png" if output_dir else None
+
+    if ext == ".webp":
+        webp_to_png(p, output_file=out_path)
+    elif ext in (".jpg", ".jpeg"):
+        jpg_to_png(p, output_file=out_path, quality=quality)
+    elif ext == ".png":
+        print(f"Skipping '{p.name}': already a PNG")
+    else:
+        out = out_path or p.with_suffix(".png")
+        img = Image.open(p)
+        img.save(out, "PNG")
+        print(f"Conversion successful: {out}")
+
+
+# ---------------------------------------------------------------------------
+# Build functions — each creates the tool UI inside `parent` and wires up
+# execution through `status_bar.run_task()`.
+# ---------------------------------------------------------------------------
+
+def build_convert_to_jpg(parent, status_bar):
+    files_in = MultiFileInput(
+        parent, "Input Image Files", [("All files", "*.*")]
+    )
+    files_in.pack(fill="x", pady=(0, 12))
+
+    dir_in = DirectoryInput(parent, "Or Select Directory")
+    dir_in.pack(fill="x", pady=(0, 16))
+
+    out_dir = DirectoryInput(parent, "Output Directory (optional)")
+    out_dir.pack(fill="x", pady=(0, 16))
+
+    quality = NumberInput(parent, "Quality (1-100)", "95", 1, 100)
+    quality.pack(fill="x", pady=(0, 24))
+
+    IMAGE_EXTS = {
+        ".webp", ".png", ".heic", ".heif", ".tiff", ".tif",
+        ".bmp", ".gif", ".ico", ".webp",
+    }
+
+    def execute():
+        files = files_in.get()
+        directory = dir_in.get()
+        if not files and not directory:
+            return status_bar.set_status(
+                "Please select files or a directory", "error"
+            )
+        q = int(quality.get() or 95)
+        od = out_dir.get() or None
+
+        def task():
+            targets = list(files) if files else [
+                str(f) for f in Path(directory).iterdir()
+                if f.suffix.lower() in IMAGE_EXTS
+            ]
+            if not targets:
+                raise ValueError("No supported image files found")
+            if od:
+                Path(od).mkdir(parents=True, exist_ok=True)
+            for f in targets:
+                _convert_file_to_jpg(f, q, output_dir=od)
+            dest = od or str(Path(targets[0]).parent)
+            return f"Converted {len(targets)} file(s) to JPG \u2192 {dest}"
+
+        status_bar.run_task(task, "Successfully converted to JPG!")
+
+    ctk.CTkButton(
+        parent, text="Convert to JPG", height=40, font=("", 14, "bold"),
+        command=execute,
+    ).pack(fill="x", pady=(8, 0))
+
+
+def build_convert_to_png(parent, status_bar):
+    files_in = MultiFileInput(
+        parent, "Input Image Files", [("All files", "*.*")]
+    )
+    files_in.pack(fill="x", pady=(0, 12))
+
+    dir_in = DirectoryInput(parent, "Or Select Directory")
+    dir_in.pack(fill="x", pady=(0, 16))
+
+    out_dir = DirectoryInput(parent, "Output Directory (optional)")
+    out_dir.pack(fill="x", pady=(0, 16))
+
+    quality = NumberInput(parent, "Quality (1-100)", "95", 1, 100)
+    quality.pack(fill="x", pady=(0, 24))
+
+    IMAGE_EXTS = {
+        ".webp", ".jpg", ".jpeg", ".tiff", ".tif",
+        ".bmp", ".gif", ".ico", ".heic", ".heif",
+    }
+
+    def execute():
+        files = files_in.get()
+        directory = dir_in.get()
+        if not files and not directory:
+            return status_bar.set_status(
+                "Please select files or a directory", "error"
+            )
+        q = int(quality.get() or 95)
+        od = out_dir.get() or None
+
+        def task():
+            targets = list(files) if files else [
+                str(f) for f in Path(directory).iterdir()
+                if f.suffix.lower() in IMAGE_EXTS
+            ]
+            if not targets:
+                raise ValueError("No supported image files found")
+            if od:
+                Path(od).mkdir(parents=True, exist_ok=True)
+            for f in targets:
+                _convert_file_to_png(f, q, output_dir=od)
+            dest = od or str(Path(targets[0]).parent)
+            return f"Converted {len(targets)} file(s) to PNG \u2192 {dest}"
+
+        status_bar.run_task(task, "Successfully converted to PNG!")
+
+    ctk.CTkButton(
+        parent, text="Convert to PNG", height=40, font=("", 14, "bold"),
+        command=execute,
+    ).pack(fill="x", pady=(8, 0))
+
+
+def build_img_to_pdf(parent, status_bar):
+    files_in = MultiFileInput(
+        parent, "Input Image Files",
+        [("Image files", "*.jpg *.jpeg *.png *.gif *.bmp")],
+    )
+    files_in.pack(fill="x", pady=(0, 16))
+
+    file_out = OutputFileInput(
+        parent, "Output PDF File (optional)", [("PDF files", "*.pdf")], ".pdf"
+    )
+    file_out.pack(fill="x", pady=(0, 24))
+
+    def execute():
+        files = files_in.get()
+        if not files:
+            return status_bar.set_status(
+                "Please select at least one image file", "error"
+            )
+        out = file_out.get()
+
+        def task():
+            if len(files) == 1:
+                out_path = Path(out) if out else Path(files[0]).with_suffix(".pdf")
+                img_to_pdf(Path(files[0]), out_path)
+            else:
                 import img2pdf
-                from pathlib import Path
-                
-                # img_to_pdf function only handles single file
-                # For multiple files, use img2pdf directly to combine them
-                if len(files) == 1:
-                    img_to_pdf(Path(files[0]), Path(output_file) if output_file else None)
-                else:
-                    # Multiple files - combine into one PDF
-                    if not output_file:
-                        output_file = Path(files[0]).parent / "combined_images.pdf"
-                    else:
-                        output_file = Path(output_file)
-                    
-                    with open(output_file, "wb") as f:
-                        f.write(img2pdf.convert([str(Path(f)) for f in files]))
-                    print(f"Conversion successful: {output_file}")
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message("Successfully created PDF from images")
-                    messagebox.showinfo("Success", "Conversion completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Convert", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_img_to_greyscale_section(self, parent):
-        """Image to greyscale converter."""
-        frame = ttk.LabelFrame(parent, text="Image to Greyscale", padding=10)
-        
-        file_selector = FileSelector(frame, "Input Image File:",
-                                     [("Image files", "*.jpg *.jpeg *.png *.gif *.bmp")])
-        file_selector.pack(fill="x", pady=5)
-        
-        output_selector = OutputFileSelector(frame, "Output File (Optional):",
-                                            [("Image files", "*.jpg *.png")])
-        output_selector.pack(fill="x", pady=5)
-        
-        quality_input = ParameterInput(frame, "Quality (0-100):", "85", 0, 100)
-        quality_input.pack(fill="x", pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            output_file = output_selector.get_path()
-            quality = quality_input.get_value() or 85
-            
-            def run():
-                img_to_greyscale(Path(input_file), 
-                               Path(output_file) if output_file else None, 
-                               int(quality))
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully converted {input_file} to greyscale")
-                    messagebox.showinfo("Success", "Conversion completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Convert", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_reduce_img_size_section(self, parent):
-        """Reduce image size."""
-        frame = ttk.LabelFrame(parent, text="Reduce Image Size", padding=10)
-        
-        file_selector = MultiFileSelector(frame, "Input Image Files:",
-                                         [("JPG files", "*.jpg *.jpeg")])
-        file_selector.pack(fill="x", pady=5)
-        
-        dir_selector = DirectorySelector(frame, "Or Select Directory:")
-        dir_selector.pack(fill="x", pady=5)
-        
-        scale_input = ParameterInput(frame, "Scale Percentage (1-100):", "50", 1, 100)
-        scale_input.pack(fill="x", pady=5)
-        
-        quality_input = ParameterInput(frame, "Quality (1-100):", "85", 1, 100)
-        quality_input.pack(fill="x", pady=5)
-        
-        def execute():
-            files = file_selector.get_paths()
-            directory = dir_selector.get_path()
-            
-            if not files and not directory:
-                messagebox.showerror("Error", "Please select files or a directory.")
-                return
-            
-            scale = scale_input.get_value() or 50
-            quality = quality_input.get_value() or 85
-            
-            def run():
-                if files:
-                    reduce_img_size([Path(f) for f in files], scale / 100, int(quality))
-                else:
-                    from pathlib import Path
-                    jpg_files = list(Path(directory).glob("*.jpg")) + \
-                               list(Path(directory).glob("*.jpeg"))
-                    if jpg_files:
-                        reduce_img_size(jpg_files, scale / 100, int(quality))
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message("Successfully reduced image sizes")
-                    messagebox.showinfo("Success", "Processing completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Reduce Size", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_remove_background_section(self, parent):
-        """Remove background from images."""
-        frame = ttk.LabelFrame(parent, text="Remove Background", padding=10)
-        
-        file_selector = MultiFileSelector(frame, "Input Image Files:",
-                                         [("Image files", "*.jpg *.jpeg *.png")])
-        file_selector.pack(fill="x", pady=5)
-        
-        dir_selector = DirectorySelector(frame, "Or Select Directory:")
-        dir_selector.pack(fill="x", pady=5)
-        
-        def execute():
-            files = file_selector.get_paths()
-            directory = dir_selector.get_path()
-            
-            if not files and not directory:
-                messagebox.showerror("Error", "Please select files or a directory.")
-                return
-            
-            def run():
-                if files:
-                    remove_background([Path(f) for f in files])
-                else:
-                    from pathlib import Path
-                    img_files = list(Path(directory).glob("*.jpg")) + \
-                               list(Path(directory).glob("*.jpeg")) + \
-                               list(Path(directory).glob("*.png"))
-                    if img_files:
-                        remove_background(img_files)
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message("Successfully removed backgrounds")
-                    messagebox.showinfo("Success", "Processing completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Remove Background", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_extract_metadata_section(self, parent):
-        """Extract metadata from image."""
-        frame = ttk.LabelFrame(parent, text="Extract Image Metadata", padding=10)
-        
-        file_selector = FileSelector(frame, "Input Image File:",
-                                    [("Image files", "*.jpg *.jpeg *.png *.gif *.bmp *.tiff")])
-        file_selector.pack(fill="x", pady=5)
-        
-        save_var = tk.BooleanVar()
-        ttk.Checkbutton(frame, text="Save to file", variable=save_var).pack(pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            def run():
-                extract_img_metadata(Path(input_file), save_var.get())
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully extracted metadata from {input_file}")
-                    messagebox.showinfo("Success", "Extraction completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Extract Metadata", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
-    
-    def _create_extract_text_section(self, parent):
-        """Extract text from image (OCR)."""
-        frame = ttk.LabelFrame(parent, text="Extract Text from Image (OCR)", padding=10)
-        
-        file_selector = FileSelector(frame, "Input Image File:",
-                                    [("Image files", "*.jpg *.jpeg *.png *.gif *.bmp *.tiff")])
-        file_selector.pack(fill="x", pady=5)
-        
-        save_var = tk.BooleanVar()
-        ttk.Checkbutton(frame, text="Save to file", variable=save_var).pack(pady=5)
-        
-        def execute():
-            input_file = file_selector.get_path()
-            if not input_file:
-                messagebox.showerror("Error", "Please select an input file.")
-                return
-            
-            def run():
-                extract_text_from_img(Path(input_file), save_var.get())
-            
-            def callback(result, error):
-                if error:
-                    self.status.add_message(f"Error: {error}", is_error=True)
-                    messagebox.showerror("Error", str(error))
-                else:
-                    self.status.add_message(f"Successfully extracted text from {input_file}")
-                    messagebox.showinfo("Success", "Extraction completed!")
-            
-            run_in_thread(run, callback)
-        
-        ttk.Button(frame, text="Extract Text", command=execute).pack(pady=10)
-        frame.pack(fill="x", padx=10, pady=5)
+                out_path = Path(out) if out else Path(files[0]).parent / "combined_images.pdf"
+                with open(out_path, "wb") as fh:
+                    fh.write(img2pdf.convert([str(Path(f)) for f in files]))
+            return f"Saved to {out_path}"
+
+        status_bar.run_task(task, "Successfully created PDF from images!")
+
+    ctk.CTkButton(
+        parent, text="Convert to PDF", height=40, font=("", 14, "bold"),
+        command=execute,
+    ).pack(fill="x", pady=(8, 0))
+
+
+def build_greyscale(parent, status_bar):
+    file_in = FileInput(
+        parent, "Input Image File",
+        [("Image files", "*.jpg *.jpeg *.png *.gif *.bmp")],
+    )
+    file_in.pack(fill="x", pady=(0, 16))
+
+    file_out = OutputFileInput(
+        parent, "Output File (optional)", [("Image files", "*.jpg *.png")]
+    )
+    file_out.pack(fill="x", pady=(0, 16))
+
+    quality = NumberInput(parent, "Quality (0-100)", "85", 0, 100)
+    quality.pack(fill="x", pady=(0, 24))
+
+    def execute():
+        inp = file_in.get()
+        if not inp:
+            return status_bar.set_status("Please select an input file", "error")
+        out = file_out.get()
+        q = quality.get() or 85
+        out_path = Path(out) if out else Path(inp).with_stem(f"{Path(inp).stem}-greyscale")
+
+        def task():
+            img_to_greyscale(Path(inp), out_path, int(q))
+            return f"Saved to {out_path}"
+
+        status_bar.run_task(task, "Successfully converted to greyscale!")
+
+    ctk.CTkButton(
+        parent, text="Convert", height=40, font=("", 14, "bold"), command=execute
+    ).pack(fill="x", pady=(8, 0))
+
+
+def build_long_png_to_pdf(parent, status_bar):
+    file_in = FileInput(parent, "Input PNG File", [("PNG files", "*.png")])
+    file_in.pack(fill="x", pady=(0, 16))
+
+    file_out = OutputFileInput(
+        parent, "Output PDF File (optional)", [("PDF files", "*.pdf")], ".pdf"
+    )
+    file_out.pack(fill="x", pady=(0, 16))
+
+    page_size = ChoiceInput(parent, "Page Size", ["a4", "letter", "legal"], "a4")
+    page_size.pack(fill="x", pady=(0, 8))
+
+    overlap = NumberInput(parent, "Overlap Pixels (0+)", "0", 0)
+    overlap.pack(fill="x", pady=(0, 24))
+
+    def execute():
+        inp = file_in.get()
+        if not inp:
+            return status_bar.set_status("Please select an input file", "error")
+        valid, err = validate_file_path(inp, [".png"])
+        if not valid:
+            return status_bar.set_status(err, "error")
+        out = file_out.get()
+        ov = int(overlap.get() or 0)
+        out_path = Path(out) if out else Path(inp).with_suffix(".pdf")
+
+        def task():
+            long_png_to_pdf(Path(inp), out_path, page_size.get(), ov)
+            return f"Saved to {out_path}"
+
+        status_bar.run_task(task, "Successfully split long PNG into multi-page PDF!")
+
+    ctk.CTkButton(
+        parent, text="Convert to PDF", height=40, font=("", 14, "bold"),
+        command=execute,
+    ).pack(fill="x", pady=(8, 0))
+
+
+def build_reduce_size(parent, status_bar):
+    files_in = MultiFileInput(
+        parent, "Input Image Files", [("JPG files", "*.jpg *.jpeg")]
+    )
+    files_in.pack(fill="x", pady=(0, 12))
+
+    dir_in = DirectoryInput(parent, "Or Select Directory")
+    dir_in.pack(fill="x", pady=(0, 16))
+
+    out_dir = DirectoryInput(parent, "Output Directory (optional)")
+    out_dir.pack(fill="x", pady=(0, 16))
+
+    scale = NumberInput(parent, "Scale Percentage (1-100)", "50", 1, 100)
+    scale.pack(fill="x", pady=(0, 8))
+
+    quality = NumberInput(parent, "Quality (1-100)", "85", 1, 100)
+    quality.pack(fill="x", pady=(0, 24))
+
+    def execute():
+        files = files_in.get()
+        directory = dir_in.get()
+        if not files and not directory:
+            return status_bar.set_status(
+                "Please select files or a directory", "error"
+            )
+        s = scale.get() or 50
+        q = quality.get() or 85
+        od = out_dir.get() or None
+
+        def task():
+            if files:
+                targets = [Path(f) for f in files]
+                reduce_img_size(targets, s / 100, int(q), output_dir=od)
+            else:
+                p = Path(directory)
+                targets = list(p.glob("*.jpg")) + list(p.glob("*.jpeg"))
+                if targets:
+                    reduce_img_size(targets, s / 100, int(q), output_dir=od)
+            dest = od or str(Path(targets[0]).parent) if targets else ""
+            return f"Reduced {len(targets)} file(s) \u2192 {dest}"
+
+        status_bar.run_task(task, "Successfully reduced image sizes!")
+
+    ctk.CTkButton(
+        parent, text="Reduce Size", height=40, font=("", 14, "bold"),
+        command=execute,
+    ).pack(fill="x", pady=(8, 0))
+
+
+def build_remove_bg(parent, status_bar):
+    if not _HAS_REMBG:
+        ctk.CTkLabel(
+            parent,
+            text="The rembg package is not installed.\n"
+                 "Install it with:  pip install rembg[cpu]",
+            font=("", 14), text_color="gray50", justify="left",
+        ).pack(fill="x", pady=(8, 0))
+        return
+
+    files_in = MultiFileInput(
+        parent, "Input Image Files",
+        [("Image files", "*.jpg *.jpeg *.png")],
+    )
+    files_in.pack(fill="x", pady=(0, 12))
+
+    dir_in = DirectoryInput(parent, "Or Select Directory")
+    dir_in.pack(fill="x", pady=(0, 16))
+
+    out_dir = DirectoryInput(parent, "Output Directory (optional)")
+    out_dir.pack(fill="x", pady=(0, 24))
+
+    def execute():
+        files = files_in.get()
+        directory = dir_in.get()
+        if not files and not directory:
+            return status_bar.set_status(
+                "Please select files or a directory", "error"
+            )
+        od = out_dir.get() or None
+
+        def task():
+            if files:
+                targets = [Path(f) for f in files]
+                remove_background(targets, output_dir=od)
+            else:
+                p = Path(directory)
+                targets = (
+                    list(p.glob("*.jpg"))
+                    + list(p.glob("*.jpeg"))
+                    + list(p.glob("*.png"))
+                )
+                if targets:
+                    remove_background(targets, output_dir=od)
+            dest = od or str(Path(targets[0]).parent) if targets else ""
+            return f"Removed background from {len(targets)} file(s) \u2192 {dest}"
+
+        status_bar.run_task(task, "Successfully removed backgrounds!")
+
+    ctk.CTkButton(
+        parent, text="Remove Background", height=40, font=("", 14, "bold"),
+        command=execute,
+    ).pack(fill="x", pady=(8, 0))
+
+
+def build_extract_metadata(parent, status_bar):
+    file_in = FileInput(
+        parent, "Input Image File",
+        [("Image files", "*.jpg *.jpeg *.png *.gif *.bmp *.tiff")],
+    )
+    file_in.pack(fill="x", pady=(0, 16))
+
+    save = CheckboxInput(parent, "Save metadata to file")
+    save.pack(fill="x", pady=(0, 24))
+
+    def execute():
+        inp = file_in.get()
+        if not inp:
+            return status_bar.set_status("Please select an input file", "error")
+        status_bar.run_task(
+            lambda: extract_img_metadata(Path(inp), save.get()),
+            "Successfully extracted metadata!",
+        )
+
+    ctk.CTkButton(
+        parent, text="Extract Metadata", height=40, font=("", 14, "bold"),
+        command=execute,
+    ).pack(fill="x", pady=(8, 0))
+
+
+def build_extract_text(parent, status_bar):
+    file_in = FileInput(
+        parent, "Input Image File",
+        [("Image files", "*.jpg *.jpeg *.png *.gif *.bmp *.tiff")],
+    )
+    file_in.pack(fill="x", pady=(0, 16))
+
+    save = CheckboxInput(parent, "Save extracted text to file")
+    save.pack(fill="x", pady=(0, 24))
+
+    def execute():
+        inp = file_in.get()
+        if not inp:
+            return status_bar.set_status("Please select an input file", "error")
+        status_bar.run_task(
+            lambda: extract_text_from_img(Path(inp), save.get()),
+            "Successfully extracted text!",
+        )
+
+    ctk.CTkButton(
+        parent, text="Extract Text", height=40, font=("", 14, "bold"),
+        command=execute,
+    ).pack(fill="x", pady=(8, 0))
+
+
+def build_qr_code(parent, status_bar):
+    if not _HAS_QR:
+        ctk.CTkLabel(
+            parent,
+            text="The qrcode package is not installed.\n"
+                 "Install it with:  pip install qrcode[pil]",
+            font=("", 14), text_color="gray50", justify="left",
+        ).pack(fill="x", pady=(8, 0))
+        return
+
+    from ..widgets import TextInput
+
+    text_in = TextInput(parent, "Text or URL", placeholder="https://example.com")
+    text_in.pack(fill="x", pady=(0, 16))
+
+    file_out = OutputFileInput(
+        parent, "Output Image File (optional)",
+        [("PNG files", "*.png")], ".png",
+    )
+    file_out.pack(fill="x", pady=(0, 16))
+
+    size = NumberInput(parent, "Box Size (pixels)", "10", 1, 50)
+    size.pack(fill="x", pady=(0, 24))
+
+    def execute():
+        data = text_in.get()
+        if not data:
+            return status_bar.set_status("Please enter text or a URL", "error")
+        out = file_out.get()
+        s = int(size.get() or 10)
+
+        def task():
+            import re
+            if out:
+                out_path = Path(out)
+            else:
+                safe = re.sub(r'[^\w\-.]', '_', data)[:50]
+                out_path = Path(f"qr_{safe}.png")
+            generate_qr(data, out_path, s)
+            return f"Saved to {out_path}"
+
+        status_bar.run_task(task, "Successfully generated QR code!")
+
+    ctk.CTkButton(
+        parent, text="Generate QR Code", height=40, font=("", 14, "bold"),
+        command=execute,
+    ).pack(fill="x", pady=(8, 0))
+
+
+# ---------------------------------------------------------------------------
+# Exported section list consumed by main_gui.py
+# ---------------------------------------------------------------------------
+
+IMAGE_SECTIONS = [
+    (
+        "FORMAT CONVERSION",
+        [
+            {
+                "name": "Convert to JPG",
+                "description": "Convert any image (PNG, WebP, HEIC, TIFF, BMP, GIF, ...) to JPG",
+                "build_fn": build_convert_to_jpg,
+            },
+            {
+                "name": "Convert to PNG",
+                "description": "Convert any image (JPG, WebP, TIFF, BMP, GIF, ...) to PNG",
+                "build_fn": build_convert_to_png,
+            },
+        ],
+    ),
+    (
+        "IMAGE PROCESSING",
+        [
+            {
+                "name": "Image \u2192 PDF",
+                "description": "Combine one or more images into a single PDF document",
+                "build_fn": build_img_to_pdf,
+            },
+            {
+                "name": "Long PNG \u2192 PDF",
+                "description": "Split a long/tall PNG into a paginated multi-page PDF",
+                "build_fn": build_long_png_to_pdf,
+            },
+            {
+                "name": "Greyscale",
+                "description": "Convert a colour image to greyscale with quality control",
+                "build_fn": build_greyscale,
+            },
+            {
+                "name": "Reduce Size",
+                "description": "Batch reduce image dimensions and file size",
+                "build_fn": build_reduce_size,
+            },
+            {
+                "name": "Remove Background",
+                "description": "Automatically remove the background from images (requires rembg)",
+                "build_fn": build_remove_bg,
+            },
+        ],
+    ),
+    (
+        "EXTRACTION",
+        [
+            {
+                "name": "Image Metadata",
+                "description": "Extract EXIF and other metadata from an image",
+                "build_fn": build_extract_metadata,
+            },
+            {
+                "name": "OCR Text",
+                "description": "Extract text from an image using optical character recognition",
+                "build_fn": build_extract_text,
+            },
+        ],
+    ),
+    (
+        "GENERATE",
+        [
+            {
+                "name": "QR Code",
+                "description": "Generate a QR code image from text or a URL",
+                "build_fn": build_qr_code,
+            },
+        ],
+    ),
+]

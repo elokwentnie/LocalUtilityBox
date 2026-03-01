@@ -4,7 +4,10 @@ from pathlib import Path
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 
-def reduce_img_size(input_files, scale_factor=0.5, quality=85):
+def reduce_img_size(input_files, scale_factor=0.5, quality=85, output_dir=None):
+    if output_dir is not None:
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
     for file in input_files:
         try:
             with Image.open(file) as image:
@@ -12,7 +15,10 @@ def reduce_img_size(input_files, scale_factor=0.5, quality=85):
                 new_width = int(original_width * scale_factor)
                 new_height = int(original_height * scale_factor)
                 size = (new_width, new_height)
-                output_file = file.with_stem(f"{file.stem}-reduced").with_suffix(".jpg")
+                if output_dir:
+                    output_file = output_dir / f"{file.stem}-reduced.jpg"
+                else:
+                    output_file = file.with_stem(f"{file.stem}-reduced").with_suffix(".jpg")
                 resized_image = ImageOps.contain(image, size)
                 resized_image.save(output_file, "JPEG", quality=quality)
                 print(

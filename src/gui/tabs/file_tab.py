@@ -12,7 +12,7 @@ from file_management.merge_pdf import merge_pdf
 from file_management.split_pdf import split_pdf
 from file_management.add_watermark import add_watermark
 from file_management.compress_pdf import compress_pdf
-from file_management.rotate_pdf import rotate_pdf, reorder_pdf
+from file_management.rotate_pdf import rotate_pdf
 from file_management.doc_to_pdf import doc_to_pdf
 from file_management.pdf_to_doc import pdf_to_docx
 from file_management.pdf_to_png import pdf_to_png

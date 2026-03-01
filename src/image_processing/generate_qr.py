@@ -1,10 +1,8 @@
-import sys
 import argparse
 from pathlib import Path
 
 try:
     import qrcode
-    from qrcode.image.styledpil import StyledPilImage
 except ImportError:
     qrcode = None
 

@@ -1,6 +1,4 @@
 """Smoke tests for image processing utilities."""
-from pathlib import Path
-
 from image_processing.webp_to_jpg import webp_to_jpg
 from image_processing.webp_to_png import webp_to_png
 from image_processing.jpg_to_png import jpg_to_png

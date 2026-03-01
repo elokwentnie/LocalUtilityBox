@@ -1,6 +1,5 @@
 """Shared fixtures for LocalUtilityBox tests."""
 import pytest
-from pathlib import Path
 from PIL import Image
 
 

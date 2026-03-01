@@ -411,8 +411,9 @@ class StatusBar(ctk.CTkFrame):
                 self.after(0, lambda: self.set_status(msg, "success"))
             except SystemExit as e:
                 msg = f"{error_prefix}: process exited with code {e.code}"
-                self.after(0, lambda: self.set_status(msg, "error"))
+                self.after(0, lambda m=msg: self.set_status(m, "error"))
             except Exception as e:
-                self.after(0, lambda: self.set_status(f"{error_prefix}: {e}", "error"))
+                msg = f"{error_prefix}: {e}"
+                self.after(0, lambda m=msg: self.set_status(m, "error"))
 
         threading.Thread(target=wrapper, daemon=True).start()

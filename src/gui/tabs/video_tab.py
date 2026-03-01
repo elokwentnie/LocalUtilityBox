@@ -3,7 +3,6 @@ import customtkinter as ctk
 from pathlib import Path
 
 from ..widgets import FileInput, OutputFileInput, ChoiceInput, NumberInput
-from ..utils import validate_file_path
 
 from video_audio_manipulation.extract_audio_from_video import extract_audio_from_video
 from video_audio_manipulation.video_to_gif import video_to_gif

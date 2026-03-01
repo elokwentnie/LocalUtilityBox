@@ -1,6 +1,4 @@
 """Smoke tests for file management utilities."""
-from pathlib import Path
-
 from file_management.merge_pdf import merge_pdf
 from file_management.split_pdf import split_pdf
 from file_management.compress_pdf import compress_pdf

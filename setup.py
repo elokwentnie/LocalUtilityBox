@@ -25,11 +25,14 @@ setup(
     long_description=Path('README.md').read_text(encoding='utf-8'),
     long_description_content_type='text/markdown',
     author='LocalUtilityBox Contributors',
-    url='https://github.com/elokwentnie/LocalUtilityBox',
+    url='https://github.com/elokwentnie/local-utility-box',
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: POSIX :: Linux',
+        'Operating System :: MacOS',
     ],
     entry_points={
         'console_scripts': [

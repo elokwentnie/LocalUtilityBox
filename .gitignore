@@ -46,6 +46,9 @@ coverage.xml
 .DS_Store
 Thumbs.db
 
+# Old app bundle (renamed)
+LocalUtilityBox.app.old/
+
 # mypy / type checkers
 .mypy_cache/
 .dmypy.json

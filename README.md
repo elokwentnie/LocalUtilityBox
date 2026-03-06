@@ -1,5 +1,8 @@
 # LocalUtilityBox
 
+[![CI](https://github.com/elokwentnie/local-utility-box/actions/workflows/ci.yml/badge.svg)](https://github.com/elokwentnie/local-utility-box/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/LocalUtilityBox.svg)](https://pypi.org/project/LocalUtilityBox/)
+
 **Don't waste your time searching for web solutions -- do it in your terminal.**
 
 LocalUtilityBox is a privacy-first suite of file-processing utilities that runs
@@ -30,6 +33,40 @@ Use it from the command line **or** through the modern desktop GUI.
 - [Poppler](https://poppler.freedesktop.org/) (only for `pdf_to_png` / `pdf_to_jpg`)
 - [LibreOffice](https://www.libreoffice.org/) **or** Microsoft Word (only for `doc_to_pdf`)
 
+### System dependencies
+
+Install these before or after the Python package, depending on which tools you use.
+
+**Linux**
+
+| Tool(s) | Ubuntu / Debian | Fedora | Arch |
+|---------|-----------------|--------|------|
+| All PDF tools | `poppler-utils` | `poppler-utils` | `poppler` |
+| `extract_text_from_img` | `tesseract-ocr` | `tesseract` | `tesseract` |
+| `doc_to_pdf` | `libreoffice` | `libreoffice` | `libreoffice-fresh` |
+| GUI | `python3-tk` | `python3-tkinter` | `tk` |
+
+```bash
+# Ubuntu / Debian
+sudo apt update
+sudo apt install poppler-utils tesseract-ocr libreoffice python3-tk
+
+# Fedora
+sudo dnf install poppler-utils tesseract libreoffice python3-tkinter
+
+# Arch Linux
+sudo pacman -S poppler tesseract libreoffice-fresh tk
+```
+
+**Windows**
+
+| Tool(s) | How to install |
+|---------|-----------------|
+| All PDF tools | [Poppler for Windows](https://github.com/oschwartz10612/poppler-windows/releases) — download, extract, add `bin` folder to PATH |
+| `extract_text_from_img` | [Tesseract installer](https://github.com/UB-Mannheim/tesseract/wiki) — install and add to PATH |
+| `doc_to_pdf` | Microsoft Word (if installed) or [LibreOffice](https://www.libreoffice.org/download/download/) |
+| GUI | tkinter is included with Python from [python.org](https://www.python.org/downloads/) |
+
 ## Installation
 
 ### pipx (recommended)
@@ -38,16 +75,45 @@ Use it from the command line **or** through the modern desktop GUI.
 while making the commands available globally.
 
 ```bash
-brew install pipx          # macOS
-# or: sudo apt install pipx  # Debian/Ubuntu
-pipx ensurepath
+# macOS
+brew install pipx
 
-pipx install git+https://github.com/elokwentnie/LocalUtilityBox.git
+# Windows (PowerShell or Command Prompt)
+# Option 1: pip
+py -m pip install --user pipx
+py -m pipx ensurepath
+# Option 2: Scoop (if installed)
+scoop install pipx
+
+# Ubuntu / Debian
+sudo apt install pipx
+
+# Fedora
+sudo dnf install pipx
+
+# Arch Linux
+sudo pacman -S python-pipx
+
+# Other Linux: install via pip
+python3 -m pip install --user pipx
+
+# Then (all platforms)
+pipx ensurepath
+# Restart your terminal (or source ~/.bashrc / ~/.zshrc on Linux/macOS)
+
+# From PyPI (after first release)
+pipx install LocalUtilityBox
+
+# Or from source
+pipx install git+https://github.com/elokwentnie/local-utility-box.git
 ```
 
 ### Optional extras
 
 ```bash
+# Drag-and-drop in the GUI (Linux, macOS, Windows)
+pipx inject localutilitybox tkinterdnd2
+
 # QR code generation
 pipx inject localutilitybox 'qrcode[pil]'
 
@@ -58,17 +124,20 @@ pipx inject localutilitybox 'rembg[cpu]'
 ### From source
 
 ```bash
-git clone https://github.com/elokwentnie/LocalUtilityBox.git
-cd LocalUtilityBox
+git clone https://github.com/elokwentnie/local-utility-box.git
+cd local-utility-box
 
-python3 -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+# Create and activate virtual environment
+python -m venv .venv
+# Windows:  .venv\Scripts\activate
+# Linux/macOS:  source .venv/bin/activate
 
 pip install .
 
 # Optional extras:
+pip install tkinterdnd2     # drag-and-drop in the GUI
 pip install 'qrcode[pil]'   # QR code generation
-pip install 'rembg[cpu]'    # AI background removal
+pip install 'rembg[cpu]'   # AI background removal
 ```
 
 ### Verify
@@ -88,11 +157,17 @@ Python distribution does not bundle it:
 # macOS (Homebrew)
 brew install python-tk@3.13
 
-# Debian / Ubuntu
-sudo apt install python3-tk
+# Linux: see "System dependencies" table above (python3-tk / python3-tkinter / tk)
 
-# Fedora
-sudo dnf install python3-tkinter
+# Windows: tkinter is included with Python from python.org
+```
+
+On Linux, the GUI runs on X11 or Wayland with a desktop environment. On Windows,
+use the standard desktop. For **drag-and-drop** file input on any platform,
+install the optional `tkinterdnd2` extra:
+
+```bash
+pipx inject localutilitybox tkinterdnd2
 ```
 
 ## Usage
@@ -106,7 +181,8 @@ localutilitybox-gui   # or: lub-gui
 The GUI provides a sidebar with every tool organised by category. Select a tool,
 fill in the inputs, and click the action button. A status bar shows real-time
 progress and the output file location. Switch between System, Light and Dark
-themes from the bottom of the sidebar.
+themes from the bottom of the sidebar. Drag-and-drop file input is supported
+when `tkinterdnd2` is installed (see GUI prerequisites above).
 
 ### Command Line
 
@@ -151,7 +227,10 @@ Run any command with `--help` for full usage details.
 
 ```bash
 docker build -t localutilitybox .
+# Linux/macOS:
 docker run -it -v "$(pwd)/files:/data" localutilitybox
+# Windows (PowerShell):
+docker run -it -v "${PWD}/files:/data" localutilitybox
 ```
 
 ## Contributing

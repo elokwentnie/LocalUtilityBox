@@ -4,8 +4,12 @@ from setuptools import setup, find_packages
 from pathlib import Path
 
 
+def _base_path():
+    return Path(__file__).parent
+
+
 def read_requirements():
-    return Path('requirements.txt').read_text().strip().splitlines()
+    return (_base_path() / 'requirements.txt').read_text(encoding='utf-8').strip().splitlines()
 
 
 setup(
@@ -22,7 +26,7 @@ setup(
         'qr': ['qrcode[pil]'],
     },
     description='A versatile utility for local image and document processing',
-    long_description=Path('README.md').read_text(encoding='utf-8'),
+    long_description=(_base_path() / 'README.md').read_text(encoding='utf-8'),
     long_description_content_type='text/markdown',
     author='LocalUtilityBox Contributors',
     url='https://github.com/elokwentnie/local-utility-box',

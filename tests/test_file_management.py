@@ -1,7 +1,6 @@
 """Tests for file management utilities."""
 import pytest
-from pathlib import Path
-from PyPDF2 import PdfReader, PdfReadError
+from PyPDF2 import PdfReader
 
 from file_management.merge_pdf import merge_pdf
 from file_management.split_pdf import split_pdf

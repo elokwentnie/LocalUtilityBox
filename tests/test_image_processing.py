@@ -1,6 +1,5 @@
 """Tests for image processing utilities."""
 import pytest
-from pathlib import Path
 from PIL import Image, UnidentifiedImageError
 
 from image_processing.webp_to_jpg import webp_to_jpg, has_transparency

@@ -128,7 +128,7 @@ def build_convert_to_jpg(parent, status_bar):
             for f in targets:
                 _convert_file_to_jpg(f, q, output_dir=od)
             dest = od or str(Path(targets[0]).parent)
-            return f"Converted {len(targets)} file(s) to JPG \u2192 {dest}"
+            return (f"Converted {len(targets)} file(s) to JPG \u2192 {dest}", dest)
 
         status_bar.run_task(task, "Successfully converted to JPG!")
 
@@ -180,7 +180,7 @@ def build_convert_to_png(parent, status_bar):
             for f in targets:
                 _convert_file_to_png(f, q, output_dir=od)
             dest = od or str(Path(targets[0]).parent)
-            return f"Converted {len(targets)} file(s) to PNG \u2192 {dest}"
+            return (f"Converted {len(targets)} file(s) to PNG \u2192 {dest}", dest)
 
         status_bar.run_task(task, "Successfully converted to PNG!")
 
@@ -219,7 +219,7 @@ def build_img_to_pdf(parent, status_bar):
                 out_path = Path(out) if out else Path(files[0]).parent / "combined_images.pdf"
                 with open(out_path, "wb") as fh:
                     fh.write(img2pdf.convert([str(Path(f)) for f in files]))
-            return f"Saved to {out_path}"
+            return (f"Saved to {out_path}", out_path)
 
         status_bar.run_task(task, "Successfully created PDF from images!")
 
@@ -254,7 +254,7 @@ def build_greyscale(parent, status_bar):
 
         def task():
             img_to_greyscale(Path(inp), out_path, int(q))
-            return f"Saved to {out_path}"
+            return (f"Saved to {out_path}", out_path)
 
         status_bar.run_task(task, "Successfully converted to greyscale!")
 
@@ -291,7 +291,7 @@ def build_long_png_to_pdf(parent, status_bar):
 
         def task():
             long_png_to_pdf(Path(inp), out_path, page_size.get(), ov)
-            return f"Saved to {out_path}"
+            return (f"Saved to {out_path}", out_path)
 
         status_bar.run_task(task, "Successfully split long PNG into multi-page PDF!")
 
@@ -340,7 +340,7 @@ def build_reduce_size(parent, status_bar):
                 if targets:
                     reduce_img_size(targets, s / 100, int(q), output_dir=od)
             dest = od or str(Path(targets[0]).parent) if targets else ""
-            return f"Reduced {len(targets)} file(s) \u2192 {dest}"
+            return (f"Reduced {len(targets)} file(s) \u2192 {dest}", dest)
 
         status_bar.run_task(task, "Successfully reduced image sizes!")
 
@@ -395,7 +395,7 @@ def build_remove_bg(parent, status_bar):
                 if targets:
                     remove_background(targets, output_dir=od)
             dest = od or str(Path(targets[0]).parent) if targets else ""
-            return f"Removed background from {len(targets)} file(s) \u2192 {dest}"
+            return (f"Removed background from {len(targets)} file(s) \u2192 {dest}", dest)
 
         status_bar.run_task(task, "Successfully removed backgrounds!")
 
@@ -494,7 +494,7 @@ def build_qr_code(parent, status_bar):
                 safe = re.sub(r'[^\w\-.]', '_', data)[:50]
                 out_path = Path(f"qr_{safe}.png")
             generate_qr(data, out_path, s)
-            return f"Saved to {out_path}"
+            return (f"Saved to {out_path}", out_path)
 
         status_bar.run_task(task, "Successfully generated QR code!")
 

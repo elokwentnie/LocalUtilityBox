@@ -58,7 +58,7 @@ def build_merge_pdf(parent, status_bar):
             out_path = Path(out) if out else None
             merge_pdf(targets, out_path)
             dest = out_path or Path(targets[0]).parent
-            return f"Merged {len(targets)} PDFs \u2192 {dest}"
+            return (f"Merged {len(targets)} PDFs \u2192 {dest}", dest)
 
         status_bar.run_task(task, "Successfully merged PDF files!")
 
@@ -103,7 +103,7 @@ def build_split_pdf(parent, status_bar):
                     split_parts = get_splitting_parts(pdf_len, num)
             split_pdf(Path(inp), split_parts, output_dir=od)
             dest = od or str(Path(inp).parent)
-            return f"Split PDF \u2192 {dest}"
+            return (f"Split PDF \u2192 {dest}", dest)
 
         status_bar.run_task(task, "Successfully split PDF!")
 
@@ -162,7 +162,7 @@ def build_watermark(parent, status_bar):
 
         def task():
             add_watermark(Path(inp), Path(wm), page_list, output_file=out_path)
-            return f"Saved to {out_path}"
+            return (f"Saved to {out_path}", out_path)
 
         status_bar.run_task(task, "Successfully added watermark!")
 
@@ -194,7 +194,7 @@ def _build_pdf_to_image(parent, status_bar, convert_fn, fmt_upper):
         def task():
             convert_fn(Path(inp), zip_cb.get(), output_dir=od)
             dest = od or str(Path(inp).parent)
-            return f"Converted PDF to {fmt_upper} \u2192 {dest}"
+            return (f"Converted PDF to {fmt_upper} \u2192 {dest}", dest)
 
         status_bar.run_task(task, f"Successfully converted PDF to {fmt_upper}!")
 
@@ -231,7 +231,7 @@ def _build_doc_converter(parent, status_bar, label_in, ftypes_in, exts_in,
 
         def task():
             convert_fn(Path(inp), out_path)
-            return f"Saved to {out_path}"
+            return (f"Saved to {out_path}", out_path)
 
         status_bar.run_task(task, msg)
 
@@ -286,7 +286,7 @@ def build_compress_pdf(parent, status_bar):
 
         def task():
             compress_pdf(Path(inp), out_path, p)
-            return f"Saved to {out_path}"
+            return (f"Saved to {out_path}", out_path)
 
         status_bar.run_task(task, "Successfully compressed PDF!")
 
@@ -338,7 +338,7 @@ def build_rotate_pdf(parent, status_bar):
 
         def task():
             rotate_pdf(Path(inp), deg, page_list, out_path)
-            return f"Saved to {out_path}"
+            return (f"Saved to {out_path}", out_path)
 
         status_bar.run_task(task, "Successfully rotated PDF pages!")
 

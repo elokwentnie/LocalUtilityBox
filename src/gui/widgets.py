@@ -1,10 +1,40 @@
 """Modern GUI widget components using customtkinter."""
 import sys
+import subprocess
 import threading
 import customtkinter as ctk
 from tkinter import filedialog, StringVar, BooleanVar
 from pathlib import Path
-from typing import Optional, List
+from typing import Callable, List, Optional
+
+
+def _reveal_path(path_str: str) -> None:
+    """Open the file or directory in the system file manager."""
+    path = Path(path_str)
+    try:
+        if sys.platform == "darwin":
+            if path.is_file():
+                subprocess.run(["open", "-R", str(path)], check=False)
+            else:
+                subprocess.run(["open", str(path)], check=False)
+        elif sys.platform == "win32":
+            if path.is_file():
+                subprocess.run(["explorer", f"/select,{path}"], check=False)
+            else:
+                subprocess.run(["explorer", str(path)], check=False)
+        else:
+            target = str(path.parent if path.is_file() else path)
+            subprocess.run(["xdg-open", target], check=False)
+    except Exception:
+        pass
+
+
+def _reveal_label() -> str:
+    if sys.platform == "darwin":
+        return "Show in Finder"
+    elif sys.platform == "win32":
+        return "Show in Explorer"
+    return "Open Folder"
 
 try:
     from tkinterdnd2 import DND_FILES
@@ -13,7 +43,7 @@ except ImportError:
     _HAS_DND = False
 
 
-def bind_mousewheel(scrollable_frame):
+def bind_mousewheel(scrollable_frame: ctk.CTkScrollableFrame) -> None:
     """Fix mousewheel scrolling over child widgets inside a CTkScrollableFrame."""
     canvas = scrollable_frame._parent_canvas
 
@@ -368,7 +398,7 @@ class StatusBar(ctk.CTkFrame):
     }
     STATUS_ICONS = {"info": "", "success": "\u2713", "error": "\u2717", "progress": "\u27f3"}
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent, **kwargs) -> None:
         super().__init__(parent, fg_color="transparent", **kwargs)
 
         self.progress = ctk.CTkProgressBar(self, mode="indeterminate", height=3)
@@ -380,14 +410,24 @@ class StatusBar(ctk.CTkFrame):
             self._row, text="Ready", font=("", 13), anchor="w", text_color="gray50"
         )
         self.status_label.pack(side="left", fill="x", expand=True)
+
+        self._reveal_btn = ctk.CTkButton(
+            self._row, text=_reveal_label(), width=120, height=26,
+            font=("", 12), corner_radius=6,
+            fg_color=("gray75", "gray25"), hover_color=("gray65", "gray35"),
+            text_color=("gray10", "gray90"),
+        )
+        # Packed on demand — hidden until a path is available
+
         self._row.pack(fill="x")
 
-    def set_status(self, message: str, status_type: str = "info"):
+    def set_status(self, message: str, status_type: str = "info") -> None:
         color = self.STATUS_COLORS.get(status_type, self.STATUS_COLORS["info"])
         icon = self.STATUS_ICONS.get(status_type, "")
 
         self.status_icon.configure(text=icon, text_color=color)
         self.status_label.configure(text=message, text_color=color)
+        self._reveal_btn.pack_forget()
 
         if status_type == "progress":
             self.progress.pack(fill="x", pady=(0, 8), before=self._row)
@@ -396,19 +436,30 @@ class StatusBar(ctk.CTkFrame):
             self.progress.stop()
             self.progress.pack_forget()
 
-    def run_task(self, task_fn, success_msg, error_prefix="Error"):
+    def _set_success_with_path(self, message: str, path: str) -> None:
+        self.set_status(message, "success")
+        self._reveal_btn.configure(command=lambda p=path: _reveal_path(p))
+        self._reveal_btn.pack(side="right", padx=(8, 0))
+
+    def run_task(self, task_fn: Callable, success_msg: str, error_prefix: str = "Error") -> None:
         """Execute task_fn on a background thread with automatic status updates.
 
-        If task_fn returns a string it replaces success_msg, allowing tasks
-        to report the output file/directory in the green status bar.
+        task_fn may return:
+        - a string  → used as the status message
+        - a (str, path) tuple → status message + clickable "Show in Finder" button
+        - None → falls back to success_msg
         """
         self.set_status("Processing...", "progress")
 
         def wrapper():
             try:
                 result = task_fn()
-                msg = result if isinstance(result, str) else success_msg
-                self.after(0, lambda: self.set_status(msg, "success"))
+                if isinstance(result, tuple) and len(result) == 2:
+                    msg, path = result
+                    self.after(0, lambda m=msg, p=str(path): self._set_success_with_path(m, p))
+                else:
+                    msg = result if isinstance(result, str) else success_msg
+                    self.after(0, lambda m=msg: self.set_status(m, "success"))
             except SystemExit as e:
                 msg = f"{error_prefix}: process exited with code {e.code}"
                 self.after(0, lambda m=msg: self.set_status(m, "error"))

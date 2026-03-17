@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/elokwentnie/local-utility-box/actions/workflows/ci.yml/badge.svg)](https://github.com/elokwentnie/local-utility-box/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/LocalUtilityBox.svg)](https://pypi.org/project/LocalUtilityBox/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python](https://img.shields.io/pypi/pyversions/LocalUtilityBox.svg)](https://pypi.org/project/LocalUtilityBox/)
 
 **Don't waste your time searching for web solutions -- do it in your terminal.**
 
@@ -25,6 +27,16 @@ Use it from the command line **or** through the modern desktop GUI.
   customtkinter.
 - **CLI** -- every tool is also available as a standalone terminal command. Run
   `localutilitybox` (or `lub`) to list them all.
+
+## Preview
+
+**GUI**
+
+![LocalUtilityBox GUI](docs/demo-gui.gif)
+
+**Terminal**
+
+![LocalUtilityBox CLI](docs/demo-terminal.gif)
 
 ## Requirements
 
@@ -185,6 +197,8 @@ themes from the bottom of the sidebar. Drag-and-drop file input is supported
 when `tkinterdnd2` is installed (see GUI prerequisites above).
 
 ### Command Line
+
+![LocalUtilityBox CLI](docs/demo-terminal.gif)
 
 Every tool ships as its own command. Run `localutilitybox` (or `lub`) to see the
 full list. A few examples:

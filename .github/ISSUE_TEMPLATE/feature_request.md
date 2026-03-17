@@ -1,20 +1,25 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
-title: ''
-labels: ''
+about: Suggest a new tool or improvement to an existing one
+title: '[Feature] '
+labels: 'enhancement'
 assignees: ''
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**What problem does this solve?**
+Describe the workflow or file-processing task that is currently missing or inconvenient.
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+**Proposed solution**
+A clear description of what you'd like. If you have a CLI command in mind, show an example:
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+```bash
+# e.g.:
+new_tool input.xyz --option value -o output.abc
+```
+
+**Alternatives considered**
+Other approaches you've thought about (different flags, combining existing tools, etc.).
 
 **Additional context**
-Add any other context or screenshots about the feature request here.
+Screenshots, links to similar tools, sample files, or any other relevant information.

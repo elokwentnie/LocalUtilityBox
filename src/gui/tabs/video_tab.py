@@ -43,7 +43,7 @@ def build_extract_audio(parent, status_bar):
 
         def task():
             extract_audio_from_video(Path(inp), audio_fmt, out_path)
-            return f"Saved to {out_path}"
+            return (f"Saved to {out_path}", out_path)
 
         status_bar.run_task(task, "Successfully extracted audio!")
 
@@ -93,7 +93,7 @@ def build_video_to_gif(parent, status_bar):
 
         def task():
             video_to_gif(Path(inp), out_path, s, e, f, w)
-            return f"Saved to {out_path}"
+            return (f"Saved to {out_path}", out_path)
 
         status_bar.run_task(task, "Successfully converted video to GIF!")
 

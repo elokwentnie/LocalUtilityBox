@@ -22,6 +22,19 @@ jobs:
       - run: ruff check src/ tests/
 
   # -----------------------------------------------------------------
+  # Dependency vulnerability scan
+  # -----------------------------------------------------------------
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install pip-audit
+      - run: pip-audit -r requirements.txt
+
+  # -----------------------------------------------------------------
   # Tests — Python 3.11 / 3.12 / 3.13
   # -----------------------------------------------------------------
   test:
@@ -49,7 +62,7 @@ jobs:
   # Build & upload package (only on version tags)
   # -----------------------------------------------------------------
   build:
-    needs: [lint, test]
+    needs: [lint, audit, test]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
@@ -86,7 +99,7 @@ jobs:
   # Build & push Docker image (default branch + tags)
   # -----------------------------------------------------------------
   docker:
-    needs: [lint, test]
+    needs: [lint, audit, test]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     permissions:

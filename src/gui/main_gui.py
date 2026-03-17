@@ -1,4 +1,8 @@
 """Main GUI Application for LocalUtilityBox."""
+from __future__ import annotations
+
+from typing import Any
+
 import customtkinter as ctk
 
 from .tabs.image_tab import IMAGE_SECTIONS
@@ -18,7 +22,7 @@ ALL_SECTIONS = IMAGE_SECTIONS + FILE_SECTIONS + VIDEO_SECTIONS
 class LocalUtilityBoxGUI(ctk.CTk, TkinterDnD.DnDWrapper if _HAS_DND else object):
     """Main application window with sidebar navigation."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         global _HAS_DND
         if _HAS_DND:
@@ -47,7 +51,7 @@ class LocalUtilityBoxGUI(ctk.CTk, TkinterDnD.DnDWrapper if _HAS_DND else object)
     # Sidebar
     # ------------------------------------------------------------------
 
-    def _build_sidebar(self):
+    def _build_sidebar(self) -> None:
         sidebar = ctk.CTkFrame(
             self, width=260, corner_radius=0,
             fg_color=("gray92", "gray14"),
@@ -121,16 +125,16 @@ class LocalUtilityBoxGUI(ctk.CTk, TkinterDnD.DnDWrapper if _HAS_DND else object)
     # Content area
     # ------------------------------------------------------------------
 
-    def _clear_content(self):
+    def _clear_content(self) -> None:
         for w in self.content.winfo_children():
             w.destroy()
 
-    def _set_active(self, tool):
+    def _set_active(self, tool: dict[str, Any]) -> None:
         for btn in self._sidebar_buttons:
             btn.configure(fg_color="transparent")
         tool["_btn"].configure(fg_color=("gray78", "gray28"))
 
-    def _show_welcome(self):
+    def _show_welcome(self) -> None:
         self._clear_content()
         for btn in self._sidebar_buttons:
             btn.configure(fg_color="transparent")
@@ -156,7 +160,7 @@ class LocalUtilityBoxGUI(ctk.CTk, TkinterDnD.DnDWrapper if _HAS_DND else object)
         ).pack(padx=28, pady=18)
         info.pack()
 
-    def _show_tool(self, tool):
+    def _show_tool(self, tool: dict[str, Any]) -> None:
         self._set_active(tool)
         self._clear_content()
 
@@ -191,7 +195,7 @@ class LocalUtilityBoxGUI(ctk.CTk, TkinterDnD.DnDWrapper if _HAS_DND else object)
     # Helpers
     # ------------------------------------------------------------------
 
-    def _center_window(self):
+    def _center_window(self) -> None:
         self.update_idletasks()
         w = self.winfo_width()
         h = self.winfo_height()

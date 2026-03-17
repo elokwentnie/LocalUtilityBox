@@ -11,3 +11,5 @@ Pillow>=10.0,<13
 pillow-heif>=0.18,<2
 pytesseract>=0.3,<1
 PyPDF2>=3.0,<4
+qrcode[pil]>=7.0,<9
+tkinterdnd2>=0.3,<1

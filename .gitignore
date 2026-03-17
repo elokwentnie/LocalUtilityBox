@@ -54,3 +54,16 @@ LocalUtilityBox.app.old/
 .dmypy.json
 .pytype/
 .pyre/
+
+# demo/.gitignore — generated output, do not commit
+*.json
+*.mp3
+example_page_*.png
+qr.png
+lub-gui-demo.mp4
+lub-gui-demo.gif
+*.claude
+*.claire
+*.tape
+demo/
+*.png

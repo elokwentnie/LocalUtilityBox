@@ -1,8 +1,8 @@
 ---
 name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
+about: Report a problem with a CLI command or the GUI
+title: '[Bug] '
+labels: 'bug'
 assignees: ''
 
 ---
@@ -10,29 +10,40 @@ assignees: ''
 **Describe the bug**
 A clear and concise description of what the bug is.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+**Command or GUI action that triggers it**
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+```bash
+# Paste the exact command you ran, e.g.:
+webp_to_jpg image.webp -o out.jpg -b white
+```
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+Or describe which GUI tool and inputs you used.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+**Expected behaviour**
+What you expected to happen.
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+**Actual behaviour**
+What actually happened. Paste the full error output / traceback if available:
+
+```
+paste error here
+```
+
+**Environment**
+
+| Field | Value |
+|-------|-------|
+| OS | e.g. Ubuntu 24.04 / macOS 14 / Windows 11 |
+| Python version | e.g. 3.12.2 |
+| LocalUtilityBox version | e.g. 1.0.1 (`lub --version`) |
+| Installation method | pipx / pip / from source |
+
+**System dependencies installed**
+
+- [ ] Poppler (`poppler-utils`)
+- [ ] Tesseract OCR
+- [ ] LibreOffice
+- [ ] tkinter (for GUI)
 
 **Additional context**
-Add any other context about the problem here.
+Any other information that might help (sample file, screenshots, etc.).

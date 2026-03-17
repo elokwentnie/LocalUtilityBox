@@ -36,7 +36,7 @@ Use it from the command line **or** through the modern desktop GUI.
 
 **Terminal**
 
-![LocalUtilityBox CLI](docs/demo-terminal.gif)
+<img src="docs/demo-terminal.gif" width="560" alt="LocalUtilityBox CLI" />
 
 ## Requirements
 
@@ -198,7 +198,7 @@ when `tkinterdnd2` is installed (see GUI prerequisites above).
 
 ### Command Line
 
-![LocalUtilityBox CLI](docs/demo-terminal.gif)
+<img src="docs/demo-terminal.gif" width="560" alt="LocalUtilityBox CLI" />
 
 Every tool ships as its own command. Run `localutilitybox` (or `lub`) to see the
 full list. A few examples:

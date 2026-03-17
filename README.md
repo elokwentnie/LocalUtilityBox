@@ -36,7 +36,7 @@ Use it from the command line **or** through the modern desktop GUI.
 
 **Terminal**
 
-<img src="docs/demo-terminal.gif" width="560" alt="LocalUtilityBox CLI" />
+<img src="docs/demo-terminal.gif" width="400" alt="LocalUtilityBox CLI" />
 
 ## Requirements
 
@@ -197,8 +197,6 @@ themes from the bottom of the sidebar. Drag-and-drop file input is supported
 when `tkinterdnd2` is installed (see GUI prerequisites above).
 
 ### Command Line
-
-<img src="docs/demo-terminal.gif" width="560" alt="LocalUtilityBox CLI" />
 
 Every tool ships as its own command. Run `localutilitybox` (or `lub`) to see the
 full list. A few examples:

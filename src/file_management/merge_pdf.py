@@ -7,6 +7,15 @@ from PyPDF2.errors import PdfReadError
 
 
 def merge_pdf(input_files: list[Path], output_file: Path = None) -> None:
+    if not input_files:
+        raise ValueError("No input PDF files provided.")
+
+    missing = [Path(pdf_file) for pdf_file in input_files if not Path(pdf_file).is_file()]
+    if missing:
+        raise FileNotFoundError(
+            "Input PDF file(s) not found: " + ", ".join(str(path) for path in missing)
+        )
+
     if output_file is None or output_file.suffix.lower() != ".pdf":
         print("No valid output path provided.")
         print("Merged file will be saved in the directory of the first input file.")
@@ -19,15 +28,21 @@ def merge_pdf(input_files: list[Path], output_file: Path = None) -> None:
         print(f"Merged file will be saved as: {output_file}")
 
     merger = PdfMerger()
+    appended = 0
     for pdf_file in input_files:
         try:
             merger.append(str(pdf_file))
+            appended += 1
         except PdfReadError:
-            print(
-                f"Error: '{pdf_file}' is not a valid PDF file or is corrupted. Skipping."
+            raise PdfReadError(
+                f"'{pdf_file}' is not a valid PDF file or is corrupted."
             )
         except Exception as e:
-            print(f"Unexpected error while reading '{pdf_file}': {e}")
+            raise RuntimeError(f"Unexpected error while reading '{pdf_file}': {e}") from e
+
+    if appended == 0:
+        merger.close()
+        raise ValueError("No valid PDF pages were merged.")
     try:
         merger.write(str(output_file))
         print(f"PDFs merged successfully into '{output_file}'")

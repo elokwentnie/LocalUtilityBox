@@ -31,12 +31,35 @@ def extract_audio_from_video(
         if output_file.suffix.strip(".").lower() not in audio_extensions:
             output_file = output_file.with_suffix(f".{audio_format}")
 
+    codec_by_ext = {
+        "mp3": "libmp3lame",
+        "wav": "pcm_s16le",
+        "aac": "aac",
+        "ogg": "libvorbis",
+        "flac": "flac",
+        "m4a": "aac",
+        "wma": "wmav2",
+        "alac": "alac",
+        "aiff": "pcm_s16be",
+        "opus": "libopus",
+    }
+    compressed_formats = {"mp3", "aac", "ogg", "m4a", "wma", "opus"}
+
     try:
-        video = VideoFileClip(str(input_file))
-        audio = video.audio
-        if audio is None:
-            raise ValueError(f"No audio stream found in '{input_file}'.")
-        audio.write_audiofile(str(output_file))
+        with VideoFileClip(str(input_file)) as video:
+            audio = video.audio
+            if audio is None:
+                raise ValueError(f"No audio stream found in '{input_file}'.")
+
+            write_kwargs = {"codec": codec_by_ext.get(audio_format)}
+            if audio_format in compressed_formats:
+                write_kwargs["bitrate"] = "192k"
+
+            audio.write_audiofile(
+                str(output_file),
+                **{k: v for k, v in write_kwargs.items() if v is not None},
+            )
+            audio.close()
         print(
             f"Audio has been successfully extracted from '{input_file}' and saved as '{output_file}'"
         )

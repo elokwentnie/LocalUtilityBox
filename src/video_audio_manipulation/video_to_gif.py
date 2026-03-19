@@ -15,17 +15,22 @@ def video_to_gif(
     """Convert a video (or a portion of it) to an animated GIF."""
     if output_file is None:
         output_file = input_file.with_suffix(".gif")
+    with VideoFileClip(str(input_file)) as source_clip:
+        clip = source_clip
+        if start is not None or end is not None:
+            clip = clip.subclipped(start or 0, end or clip.duration)
 
-    clip = VideoFileClip(str(input_file))
+        if width and width < clip.w:
+            clip = clip.resized(width=width)
 
-    if start is not None or end is not None:
-        clip = clip.subclipped(start or 0, end or clip.duration)
+        # ffmpeg backend is usually faster and more memory-efficient.
+        clip.write_gif(str(output_file), fps=fps, program="ffmpeg")
+        duration = clip.duration
 
-    if width and width < clip.w:
-        clip = clip.resized(width=width)
+        if clip is not source_clip:
+            clip.close()
 
-    clip.write_gif(str(output_file), fps=fps)
-    print(f"GIF saved: {output_file} ({clip.duration:.1f}s, {fps} fps)")
+    print(f"GIF saved: {output_file} ({duration:.1f}s, {fps} fps)")
 
 
 def main():

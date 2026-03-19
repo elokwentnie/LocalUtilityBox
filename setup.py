@@ -13,8 +13,8 @@ def read_requirements():
 
 
 setup(
-    name='LocalUtilityBox',
-    version='1.0.1',
+    name='localutilitybox',
+    version='1.1.0',
     packages=find_packages(where='src'),
     py_modules=['cli'],
     package_dir={'': 'src'},
@@ -53,6 +53,7 @@ setup(
             'extract_img_metadata=image_processing.extract_img_metadata:main',
             'extract_text_from_img=image_processing.extract_text_from_img:main',
             'long_png_to_pdf=image_processing.long_png_to_pdf:main',
+            'photos_to_gif=image_processing.photos_to_gif:main',
 
             'merge_pdf=file_management.merge_pdf:main',
             'compress_pdf=file_management.compress_pdf:main',

@@ -5,6 +5,7 @@ from PyPDF2 import PdfReader
 from file_management.merge_pdf import merge_pdf
 from file_management.split_pdf import split_pdf
 from file_management.compress_pdf import compress_pdf
+from file_management.json_to_csv import json_to_csv
 from file_management.rotate_pdf import rotate_pdf, reorder_pdf
 
 
@@ -107,6 +108,26 @@ def test_reorder_pdf_single_page(tmp_path):
     out = tmp_path / "reordered_single.pdf"
     reorder_pdf(p, [0], output_file=out)
     assert out.exists()
+
+
+def test_json_to_csv_list_of_dicts(tmp_path):
+    src = tmp_path / "rows.json"
+    src.write_text('[{"a":1,"b":"x"},{"a":2,"b":"y"}]', encoding="utf-8")
+    out = tmp_path / "rows.csv"
+    json_to_csv(src, out)
+    content = out.read_text(encoding="utf-8")
+    assert "a,b" in content
+    assert "1,x" in content
+
+
+def test_json_to_csv_single_nested_object(tmp_path):
+    src = tmp_path / "nested.json"
+    src.write_text('{"user":{"name":"Ana","age":30}}', encoding="utf-8")
+    out = tmp_path / "nested.csv"
+    json_to_csv(src, out)
+    content = out.read_text(encoding="utf-8")
+    assert "user.name" in content
+    assert "user.age" in content
 
 
 # ---------------------------------------------------------------------------

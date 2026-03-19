@@ -11,8 +11,26 @@ def json_to_csv(input_file: Path, output_file: Path = None) -> None:
     try:
         with open(input_file, "r", encoding="utf-8") as data_file:
             data = json.load(data_file)
-        # Normalize JSON data into a flat table
-        df = pd.json_normalize(data)
+
+        # Fast paths for common JSON shapes to avoid expensive deep normalization.
+        if isinstance(data, list):
+            if data and all(isinstance(item, dict) for item in data):
+                df = pd.DataFrame.from_records(data)
+            else:
+                df = pd.DataFrame({"value": data})
+        elif isinstance(data, dict):
+            list_of_dicts_keys = [
+                key for key, value in data.items()
+                if isinstance(value, list)
+                and (not value or all(isinstance(item, dict) for item in value))
+            ]
+            if len(list_of_dicts_keys) == 1 and len(data) == 1:
+                df = pd.DataFrame.from_records(data[list_of_dicts_keys[0]])
+            else:
+                df = pd.json_normalize(data, sep=".")
+        else:
+            df = pd.DataFrame({"value": [data]})
+
         # Write DataFrame to CSV without the index
         df.to_csv(output_file, index=False)
         print(f"Conversion successful: {output_file}")

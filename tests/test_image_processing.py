@@ -9,6 +9,7 @@ from image_processing.png_to_jpg import png_to_jpg
 from image_processing.img_to_pdf import img_to_pdf
 from image_processing.img_to_greyscale import img_to_greyscale
 from image_processing.reduce_img_size import reduce_img_size
+from image_processing.photos_to_gif import photos_to_gif
 
 
 # ---------------------------------------------------------------------------
@@ -65,6 +66,15 @@ def test_reduce_img_size_default_location(tmp_image):
     reduce_img_size([tmp_image], scale_factor=0.5, quality=80)
     out = tmp_image.with_stem(f"{tmp_image.stem}-reduced").with_suffix(".jpg")
     assert out.exists()
+
+
+def test_photos_to_gif(tmp_image, tmp_path):
+    second = tmp_path / "second.jpg"
+    Image.new("RGB", (120, 90), color="blue").save(second, "JPEG")
+    out = tmp_path / "animated.gif"
+    photos_to_gif([tmp_image, second], out, duration_ms=120)
+    assert out.exists()
+    assert out.stat().st_size > 0
 
 
 # ---------------------------------------------------------------------------

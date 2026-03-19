@@ -17,6 +17,7 @@ TOOLS = {
         ("extract_img_metadata", "Extract EXIF metadata from an image"),
         ("extract_text_from_img","OCR — extract text from an image"),
         ("generate_qr",          "Generate a QR code from text or a URL (requires qrcode)"),
+        ("photos_to_gif",        "Create an animated GIF from multiple photos"),
     ],
     "PDF Operations": [
         ("merge_pdf",     "Merge multiple PDFs into one"),

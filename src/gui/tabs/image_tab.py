@@ -26,6 +26,7 @@ except ImportError:
 from image_processing.long_png_to_pdf import long_png_to_pdf
 from image_processing.extract_img_metadata import extract_img_metadata
 from image_processing.extract_text_from_img import extract_text_from_img
+from image_processing.photos_to_gif import photos_to_gif
 try:
     from image_processing.generate_qr import generate_qr
     _HAS_QR = True
@@ -504,6 +505,47 @@ def build_qr_code(parent, status_bar):
     ).pack(fill="x", pady=(8, 0))
 
 
+def build_photos_to_gif(parent, status_bar):
+    files_in = MultiFileInput(
+        parent, "Input Image Files",
+        [("Image files", "*.jpg *.jpeg *.png *.webp *.bmp *.gif *.tiff *.tif")],
+    )
+    files_in.pack(fill="x", pady=(0, 16))
+
+    file_out = OutputFileInput(
+        parent, "Output GIF File (optional)", [("GIF files", "*.gif")], ".gif"
+    )
+    file_out.pack(fill="x", pady=(0, 16))
+
+    duration = NumberInput(parent, "Frame Duration (ms)", "200", 1)
+    duration.pack(fill="x", pady=(0, 8))
+
+    loop = NumberInput(parent, "Loop Count (0 = infinite)", "0", 0)
+    loop.pack(fill="x", pady=(0, 24))
+
+    def execute():
+        files = files_in.get()
+        if len(files) < 2:
+            return status_bar.set_status("Please select at least 2 images", "error")
+
+        out = file_out.get()
+        d = int(duration.get() or 200)
+        l = int(loop.get() or 0)
+
+        def task():
+            paths = [Path(f) for f in files]
+            out_path = Path(out) if out else paths[0].with_name(f"{paths[0].stem}-animated.gif")
+            photos_to_gif(paths, out_path, d, l)
+            return (f"Saved to {out_path}", out_path)
+
+        status_bar.run_task(task, "Successfully created GIF from photos!")
+
+    ctk.CTkButton(
+        parent, text="Create GIF", height=40, font=("", 14, "bold"),
+        command=execute,
+    ).pack(fill="x", pady=(8, 0))
+
+
 # ---------------------------------------------------------------------------
 # Exported section list consumed by main_gui.py
 # ---------------------------------------------------------------------------
@@ -576,6 +618,11 @@ IMAGE_SECTIONS = [
                 "name": "QR Code",
                 "description": "Generate a QR code image from text or a URL",
                 "build_fn": build_qr_code,
+            },
+            {
+                "name": "Photos -> GIF",
+                "description": "Create an animated GIF from multiple photos",
+                "build_fn": build_photos_to_gif,
             },
         ],
     ),

@@ -47,7 +47,7 @@ coverage.xml
 Thumbs.db
 
 # Old app bundle (renamed)
-LocalUtilityBox.app.old/
+localutilitybox.app.old/
 
 # mypy / type checkers
 .mypy_cache/

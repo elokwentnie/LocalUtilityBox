@@ -9,7 +9,7 @@ def test_localutilitybox_runs():
         capture_output=True, text=True,
     )
     assert result.returncode == 0
-    assert "LocalUtilityBox" in result.stdout
+    assert "localutilitybox" in result.stdout
     assert "Image Processing" in result.stdout
     assert "PDF Operations" in result.stdout
     assert "Video / Audio" in result.stdout

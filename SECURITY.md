@@ -2,7 +2,7 @@
 
 ## Reporting Security Issues
 
-If you discover a security vulnerability in LocalUtilityBox, please report it promptly so we can address it. Follow these steps to ensure the issue is handled securely:
+If you discover a security vulnerability in localutilitybox, please report it promptly so we can address it. Follow these steps to ensure the issue is handled securely:
 
 1. **Do Not Publicly Disclose**: Please do not disclose the vulnerability publicly until it has been addressed and patched.
 2. **Report Privately**: Email the details of the security issue to [https://github.com/elokwentnie] @elokwentnie with a description of the vulnerability, steps to reproduce it, and any potential impact.
@@ -24,5 +24,5 @@ To help maintain the security of the project:
 - **Keep Dependencies Updated**: Ensure that any dependencies or libraries used are up-to-date with the latest security patches.
 - **Use Secure Practices**: Avoid hardcoding sensitive information and use environment variables or secure vaults for credentials.
 
-Thank you for helping us keep LocalUtilityBox secure!
+Thank you for helping us keep localutilitybox secure!
 

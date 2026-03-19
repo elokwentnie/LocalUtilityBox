@@ -1,12 +1,12 @@
-# Contributing to LocalUtilityBox
+# Contributing to localutilitybox
 
-Thank you for considering contributing to LocalUtilityBox! We welcome contributions of all kinds, from bug fixes and improvements to new features and documentation updates. Please follow the guidelines below to help us maintain the quality and consistency of the project.
+Thank you for considering contributing to localutilitybox! We welcome contributions of all kinds, from bug fixes and improvements to new features and documentation updates. Please follow the guidelines below to help us maintain the quality and consistency of the project.
 
 ## How to Contribute
 
 ### Reporting Issues
 
-If you encounter any bugs or have suggestions for improvements, please open an issue on our [GitHub Issues page](https://github.com/elokwentnie/local-utility-box/issues). When reporting an issue, provide as much detail as possible, including:
+If you encounter any bugs or have suggestions for improvements, please open an issue on our [GitHub Issues page](https://github.com/elokwentnie/localutilitybox/issues). When reporting an issue, provide as much detail as possible, including:
 
 - A description of the problem or suggestion
 - Steps to reproduce the issue (if applicable)
@@ -20,7 +20,7 @@ We use GitHub for version control, so please follow these steps to contribute co
 
 2. **Clone Your Fork**: Clone your fork to your local machine:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/local-utility-box.git
+   git clone https://github.com/YOUR_USERNAME/localutilitybox.git
    ```
 
 3. **Create a Branch:** Create a new branch for your changes. Use a descriptive name for your branch or `issue_<number>`:

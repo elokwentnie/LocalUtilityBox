@@ -1,1 +1,1 @@
-"""GUI module for LocalUtilityBox."""
+"""GUI module for localutilitybox."""

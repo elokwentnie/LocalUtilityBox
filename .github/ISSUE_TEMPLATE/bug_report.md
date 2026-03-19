@@ -35,7 +35,7 @@ paste error here
 |-------|-------|
 | OS | e.g. Ubuntu 24.04 / macOS 14 / Windows 11 |
 | Python version | e.g. 3.12.2 |
-| LocalUtilityBox version | e.g. 1.0.1 (`lub --version`) |
+| localutilitybox version | e.g. 1.0.1 (`lub --version`) |
 | Installation method | pipx / pip / from source |
 
 **System dependencies installed**

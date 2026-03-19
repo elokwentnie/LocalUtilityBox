@@ -28,8 +28,8 @@ setup(
     description='A versatile utility for local image and document processing',
     long_description=(_base_path() / 'README.md').read_text(encoding='utf-8'),
     long_description_content_type='text/markdown',
-    author='LocalUtilityBox Contributors',
-    url='https://github.com/elokwentnie/local-utility-box',
+    author='localutilitybox Contributors',
+    url='https://github.com/elokwentnie/localutilitybox',
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',

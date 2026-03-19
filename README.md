@@ -1,42 +1,42 @@
-# LocalUtilityBox
+# localutilitybox
 
-[![CI](https://github.com/elokwentnie/local-utility-box/actions/workflows/ci.yml/badge.svg)](https://github.com/elokwentnie/local-utility-box/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/LocalUtilityBox.svg)](https://pypi.org/project/LocalUtilityBox/)
+[![CI](https://github.com/elokwentnie/localutilitybox/actions/workflows/ci.yml/badge.svg)](https://github.com/elokwentnie/localutilitybox/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/localutilitybox.svg)](https://pypi.org/project/localutilitybox/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python](https://img.shields.io/pypi/pyversions/LocalUtilityBox.svg)](https://pypi.org/project/LocalUtilityBox/)
+[![Python](https://img.shields.io/pypi/pyversions/localutilitybox.svg)](https://pypi.org/project/localutilitybox/)
 
-**Don't waste your time searching for web solutions -- do it in your terminal.**
+**Don't waste your time searching for web solutions - do it in your terminal.**
 
-LocalUtilityBox is a privacy-first suite of file-processing utilities that runs
+**localutilitybox** is a privacy-first suite of file-processing utilities that runs
 entirely on your machine. No uploads, no third-party servers, no subscriptions.
 Use it from the command line **or** through the modern desktop GUI.
 
 ## Features
 
-- **Image Processing** -- convert between WebP, JPG, PNG, TIFF and HEIC; resize
+- **Image Processing** - convert between WebP, JPG, PNG, TIFF and HEIC; resize
   and compress; remove backgrounds; convert to greyscale; split long PNGs into
   multi-page PDFs; extract EXIF metadata; OCR text from images; generate QR codes.
-- **PDF Management** -- merge, split, compress, rotate/reorder and watermark PDFs;
+- **PDF Management** - merge, split, compress, rotate/reorder and watermark PDFs;
   convert pages to PNG/JPG.
-- **Document Conversion** -- DOC/DOCX to PDF and back.
-- **Data Format Conversion** -- CSV, Excel and JSON, any direction.
-- **Video / Audio** -- extract audio tracks from video files (MP3, WAV, AAC,
+- **Document Conversion** - DOC/DOCX to PDF and back.
+- **Data Format Conversion** - CSV, Excel and JSON, any direction.
+- **Video / Audio** - extract audio tracks from video files (MP3, WAV, AAC,
   OGG, FLAC, M4A); convert video clips to animated GIFs.
-- **Desktop GUI** -- a modern sidebar-based interface with dark/light theme
+- **Desktop GUI** - a modern sidebar-based interface with dark/light theme
   support, drag-and-drop file input, and output directory selection, built with
   customtkinter.
-- **CLI** -- every tool is also available as a standalone terminal command. Run
+- **CLI** - every tool is also available as a standalone terminal command. Run
   `localutilitybox` (or `lub`) to list them all.
 
 ## Preview
 
 **GUI**
 
-![LocalUtilityBox GUI](docs/demo-gui.gif)
+![localutilitybox GUI](docs/demo-gui.gif)
 
 **Terminal**
 
-<img src="docs/demo-terminal.gif" width="400" alt="LocalUtilityBox CLI" />
+<img src="docs/demo-terminal.gif" width="400" alt="localutilitybox CLI" />
 
 ## Requirements
 
@@ -117,10 +117,10 @@ pipx ensurepath
 # Restart your terminal (or source ~/.bashrc / ~/.zshrc on Linux/macOS)
 
 # From PyPI (after first release)
-pipx install LocalUtilityBox
+pipx install localutilitybox
 
 # Or from source
-pipx install git+https://github.com/elokwentnie/local-utility-box.git
+pipx install git+https://github.com/elokwentnie/localutilitybox.git
 ```
 
 ### Optional extras
@@ -129,9 +129,6 @@ pipx install git+https://github.com/elokwentnie/local-utility-box.git
 # Drag-and-drop in the GUI (Linux, macOS, Windows)
 pipx inject localutilitybox tkinterdnd2
 
-# QR code generation
-pipx inject localutilitybox 'qrcode[pil]'
-
 # AI background removal (large download)
 pipx inject localutilitybox 'rembg[cpu]'
 ```
@@ -139,8 +136,8 @@ pipx inject localutilitybox 'rembg[cpu]'
 ### From source
 
 ```bash
-git clone https://github.com/elokwentnie/local-utility-box.git
-cd local-utility-box
+git clone https://github.com/elokwentnie/localutilitybox.git
+cd localutilitybox
 
 # Create and activate virtual environment
 python -m venv .venv
@@ -151,7 +148,6 @@ pip install .
 
 # Optional extras:
 pip install tkinterdnd2     # drag-and-drop in the GUI
-pip install 'qrcode[pil]'   # QR code generation
 pip install 'rembg[cpu]'   # AI background removal
 ```
 
@@ -217,7 +213,7 @@ compress_pdf input.pdf
 rotate_pdf input.pdf --rotation 90
 add_watermark input.pdf -w watermark.pdf -p 0 1 2
 
-# QR code (requires qrcode[pil])
+# QR code generation
 generate_qr "https://example.com" -o qr.png
 
 # Document conversion

@@ -1,1 +1,1 @@
-"""File management utilities for LocalUtilityBox."""
+"""File management utilities for localutilitybox."""

@@ -1,1 +1,1 @@
-"""Video and audio manipulation utilities for LocalUtilityBox."""
+"""Video and audio manipulation utilities for localutilitybox."""

@@ -1,4 +1,4 @@
-"""Shared fixtures for LocalUtilityBox tests."""
+"""Shared fixtures for localutilitybox tests."""
 import pytest
 from PIL import Image
 

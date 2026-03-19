@@ -1,4 +1,4 @@
-"""Main GUI Application for LocalUtilityBox."""
+"""Main GUI Application for localutilitybox."""
 from __future__ import annotations
 
 from typing import Any
@@ -19,7 +19,7 @@ except ImportError:
 ALL_SECTIONS = IMAGE_SECTIONS + FILE_SECTIONS + VIDEO_SECTIONS
 
 
-class LocalUtilityBoxGUI(ctk.CTk, TkinterDnD.DnDWrapper if _HAS_DND else object):
+class localutilityboxGUI(ctk.CTk, TkinterDnD.DnDWrapper if _HAS_DND else object):
     """Main application window with sidebar navigation."""
 
     def __init__(self) -> None:
@@ -30,7 +30,7 @@ class LocalUtilityBoxGUI(ctk.CTk, TkinterDnD.DnDWrapper if _HAS_DND else object)
                 self.TkdndVersion = TkinterDnD._require(self)
             except Exception:
                 _HAS_DND = False
-        self.title("LocalUtilityBox")
+        self.title("localutilitybox")
         self.geometry("1100x750")
         self.minsize(950, 620)
 
@@ -62,7 +62,7 @@ class LocalUtilityBoxGUI(ctk.CTk, TkinterDnD.DnDWrapper if _HAS_DND else object)
         # App branding
         brand = ctk.CTkFrame(sidebar, fg_color="transparent")
         ctk.CTkLabel(
-            brand, text="LocalUtilityBox", font=("", 20, "bold"), anchor="w"
+            brand, text="localutilitybox", font=("", 20, "bold"), anchor="w"
         ).pack(fill="x")
         ctk.CTkLabel(
             brand, text="Local file processing", font=("", 12),
@@ -143,7 +143,7 @@ class LocalUtilityBoxGUI(ctk.CTk, TkinterDnD.DnDWrapper if _HAS_DND else object)
         center.place(relx=0.5, rely=0.42, anchor="center")
 
         ctk.CTkLabel(
-            center, text="Welcome to LocalUtilityBox",
+            center, text="Welcome to localutilitybox",
             font=("", 28, "bold"),
         ).pack(pady=(0, 8))
 
@@ -206,7 +206,7 @@ class LocalUtilityBoxGUI(ctk.CTk, TkinterDnD.DnDWrapper if _HAS_DND else object)
 
 def main():
     """Main entry point for GUI application."""
-    app = LocalUtilityBoxGUI()
+    app = localutilityboxGUI()
     app.mainloop()
 
 

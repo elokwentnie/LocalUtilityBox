@@ -1,4 +1,4 @@
-"""Master CLI entry point — lists all available LocalUtilityBox tools."""
+"""Master CLI entry point — lists all available localutilitybox tools."""
 
 
 TOOLS = {
@@ -50,7 +50,7 @@ TOOLS = {
 
 def main():
     print()
-    print("  LocalUtilityBox — local file processing tools")
+    print("  localutilitybox — local file processing tools")
     print("  " + "=" * 47)
     print()
     for category, tools in TOOLS.items():

@@ -1,1 +1,1 @@
-"""Image processing utilities for LocalUtilityBox."""
+"""Image processing utilities for localutilitybox."""

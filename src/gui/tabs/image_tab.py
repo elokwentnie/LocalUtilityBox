@@ -530,12 +530,12 @@ def build_photos_to_gif(parent, status_bar):
 
         out = file_out.get()
         d = int(duration.get() or 200)
-        l = int(loop.get() or 0)
+        loop_count = int(loop.get() or 0)
 
         def task():
             paths = [Path(f) for f in files]
             out_path = Path(out) if out else paths[0].with_name(f"{paths[0].stem}-animated.gif")
-            photos_to_gif(paths, out_path, d, l)
+            photos_to_gif(paths, out_path, d, loop_count)
             return (f"Saved to {out_path}", out_path)
 
         status_bar.run_task(task, "Successfully created GIF from photos!")

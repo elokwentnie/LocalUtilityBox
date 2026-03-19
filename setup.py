@@ -14,7 +14,7 @@ def read_requirements():
 
 setup(
     name='localutilitybox',
-    version='1.1.0',
+    version='1.1.1',
     packages=find_packages(where='src'),
     py_modules=['cli'],
     package_dir={'': 'src'},

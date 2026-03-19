@@ -1,13 +1,20 @@
 import sys
 import argparse
 from pathlib import Path
-from moviepy import VideoFileClip
 import mimetypes
+import shutil
+import subprocess
 
 
 def extract_audio_from_video(
     input_file: Path, audio_format: str = "mp3", output_file: Path = None
 ) -> None:
+    if shutil.which("ffmpeg") is None:
+        raise RuntimeError(
+            "ffmpeg is required but was not found in PATH. "
+            "Install it (macOS: brew install ffmpeg, Ubuntu/Debian: sudo apt install ffmpeg)."
+        )
+
     audio_extensions = [
         "mp3",
         "wav",
@@ -46,20 +53,19 @@ def extract_audio_from_video(
     compressed_formats = {"mp3", "aac", "ogg", "m4a", "wma", "opus"}
 
     try:
-        with VideoFileClip(str(input_file)) as video:
-            audio = video.audio
-            if audio is None:
-                raise ValueError(f"No audio stream found in '{input_file}'.")
-
-            write_kwargs = {"codec": codec_by_ext.get(audio_format)}
-            if audio_format in compressed_formats:
-                write_kwargs["bitrate"] = "192k"
-
-            audio.write_audiofile(
-                str(output_file),
-                **{k: v for k, v in write_kwargs.items() if v is not None},
-            )
-            audio.close()
+        command = [
+            "ffmpeg",
+            "-y",
+            "-i",
+            str(input_file),
+            "-vn",
+            "-acodec",
+            codec_by_ext[audio_format],
+        ]
+        if audio_format in compressed_formats:
+            command.extend(["-b:a", "192k"])
+        command.append(str(output_file))
+        subprocess.run(command, check=True, capture_output=True, text=True)
         print(
             f"Audio has been successfully extracted from '{input_file}' and saved as '{output_file}'"
         )

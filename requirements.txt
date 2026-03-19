@@ -1,13 +1,12 @@
 customtkinter>=5.2
 docx2pdf>=0.1.8
 img2pdf>=0.5
-moviepy>=2.0
 numpy>=1.26
 openpyxl>=3.1
 pandas>=2.0
 pdf2docx>=0.5
 pdf2image>=1.17
-pillow>10.0.0
+pillow>=12.1.1
 pillow-heif>=0.18
 pytesseract>=0.3
 pypdf2>=3.0

@@ -1,7 +1,8 @@
 import sys
 import argparse
 from pathlib import Path
-from moviepy import VideoFileClip
+import shutil
+import subprocess
 
 
 def video_to_gif(
@@ -13,24 +14,33 @@ def video_to_gif(
     width: int = None,
 ) -> None:
     """Convert a video (or a portion of it) to an animated GIF."""
+    if shutil.which("ffmpeg") is None:
+        raise RuntimeError(
+            "ffmpeg is required but was not found in PATH. "
+            "Install it (macOS: brew install ffmpeg, Ubuntu/Debian: sudo apt install ffmpeg)."
+        )
+
     if output_file is None:
         output_file = input_file.with_suffix(".gif")
-    with VideoFileClip(str(input_file)) as source_clip:
-        clip = source_clip
-        if start is not None or end is not None:
-            clip = clip.subclipped(start or 0, end or clip.duration)
 
-        if width and width < clip.w:
-            clip = clip.resized(width=width)
+    vf_parts = [f"fps={fps}"]
+    if width:
+        vf_parts.append(f"scale={width}:-1:flags=lanczos")
+    vf = ",".join(vf_parts)
 
-        # ffmpeg backend is usually faster and more memory-efficient.
-        clip.write_gif(str(output_file), fps=fps, program="ffmpeg")
-        duration = clip.duration
+    command = ["ffmpeg", "-y"]
+    if start is not None:
+        command.extend(["-ss", str(start)])
+    command.extend(["-i", str(input_file)])
+    if end is not None:
+        duration = end - (start or 0)
+        if duration <= 0:
+            raise ValueError("--end must be greater than --start.")
+        command.extend(["-t", str(duration)])
+    command.extend(["-vf", vf, str(output_file)])
 
-        if clip is not source_clip:
-            clip.close()
-
-    print(f"GIF saved: {output_file} ({duration:.1f}s, {fps} fps)")
+    subprocess.run(command, check=True, capture_output=True, text=True)
+    print(f"GIF saved: {output_file} ({fps} fps)")
 
 
 def main():
